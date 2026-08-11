@@ -9,19 +9,23 @@ import { validateForm } from '../lib/schema';
 type Props = {
   values: FormDraft;
   honeypot: string;
+  hasSavedProfile: boolean;
   onChange: (patch: Partial<FormDraft>) => void;
   onHoneypotChange: (value: string) => void;
   onValid: (values: FormValues) => void;
   onReset: () => void;
+  onForgetProfile: () => void;
 };
 
 export default function FormScreen({
   values,
   honeypot,
+  hasSavedProfile,
   onChange,
   onHoneypotChange,
   onValid,
   onReset,
+  onForgetProfile,
 }: Props) {
   const [errors, setErrors] = useState<ErrorMap>({});
   const [showSummaryError, setShowSummaryError] = useState(false);
@@ -78,6 +82,16 @@ export default function FormScreen({
           Các thông tin này được in nguyên văn lên đơn, hãy kiểm tra kỹ chính tả.
         </p>
         <ApplicantFields values={values} errors={errors} onChange={patchField} />
+
+        {hasSavedProfile && (
+          <p className="profile-note">
+            Thông tin trên được điền sẵn từ lần nộp trước.{' '}
+            <button type="button" className="link-button" onClick={onForgetProfile}>
+              Quên thông tin đã lưu
+            </button>{' '}
+            nếu đây là máy dùng chung.
+          </p>
+        )}
       </section>
 
       <section className="card">

@@ -9,6 +9,15 @@ import type { FormDraft, FormValues } from './lib/schema';
 import { emptyForm } from './lib/schema';
 import { clearSubmitted, loadSubmitted, saveSubmitted } from './lib/session';
 import { SubmitError, buildPayload, submitToSheet } from './lib/sheets';
+import {
+  clearDraft,
+  clearProfile,
+  freshForm,
+  loadDraft,
+  loadProfile,
+  saveDraft,
+  saveProfile,
+} from './lib/storage';
 
 type Screen = 'form' | 'review' | 'done';
 
@@ -25,7 +34,14 @@ export default function App() {
   const [restored] = useState(loadSubmitted);
 
   const [screen, setScreen] = useState<Screen>(restored ? 'done' : 'form');
-  const [draft, setDraft] = useState<FormDraft>(emptyForm);
+
+  // Ưu tiên bản nháp đang dở; nếu không có thì mở biểu mẫu trống đã điền sẵn
+  // thông tin cá nhân của lần nộp trước.
+  const [draft, setDraft] = useState<FormDraft>(
+    () => loadDraft() ?? freshForm(loadProfile()),
+  );
+  const [hasSavedProfile, setHasSavedProfile] = useState(() => loadProfile() !== null);
+
   const [reviewed, setReviewed] = useState<FormValues | null>(restored?.values ?? null);
 
   const [submitting, setSubmitting] = useState(false);
@@ -85,6 +101,14 @@ export default function App() {
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
 
+  // Tự lưu bản nháp trong lúc điền. Hoãn một nhịp ngắn để không ghi
+  // localStorage sau từng phím gõ khi danh sách mẫu đã dài.
+  useEffect(() => {
+    if (screen !== 'form') return;
+    const timer = setTimeout(() => saveDraft(draft), 400);
+    return () => clearTimeout(timer);
+  }, [draft, screen]);
+
   const handleValid = useCallback(
     (values: FormValues) => {
       setReviewed(values);
@@ -99,19 +123,30 @@ export default function App() {
     go('form');
   }, [go]);
 
+  // "Xóa hết": người dùng chủ động dọn sạch, nên không điền lại thông tin cá
+  // nhân. Bản thân thông tin đã lưu vẫn còn, xóa riêng bằng nút bên dưới.
   // Đang ở màn hình nhập liệu sẵn rồi nên không thêm mục lịch sử mới.
   const handleReset = useCallback(() => {
+    clearDraft();
     setDraft(emptyForm());
     setReviewed(null);
     setSubmitError(null);
     window.scrollTo({ top: 0 });
   }, []);
 
+  const handleForgetProfile = useCallback(() => {
+    clearProfile();
+    setHasSavedProfile(false);
+  }, []);
+
+  // "Tạo đơn mới" sau khi đã gửi: đây chính là lúc thông tin cá nhân đã lưu
+  // phát huy tác dụng, chỉ còn phải nhập danh sách mẫu.
   const handleRestart = useCallback(() => {
     clearSubmitted();
+    clearDraft();
     maHoSoRef.current = null;
     setSubmitted(null);
-    setDraft(emptyForm());
+    setDraft(freshForm(loadProfile()));
     setReviewed(null);
     setSubmitError(null);
     go('form');
@@ -132,6 +167,13 @@ export default function App() {
       saveSubmitted(record);
       setSubmitted(record);
       submittedRef.current = record;
+
+      // Đơn đã nằm trong bảng nên bản nháp không còn cần nữa; giữ lại thông
+      // tin cá nhân để lần nộp sau chỉ phải nhập danh sách mẫu.
+      clearDraft();
+      saveProfile(reviewed);
+      setHasSavedProfile(true);
+
       go('done');
     } catch (error) {
       // Theo quyết định của bộ môn: ghi không được thì dừng ở màn hình xem
@@ -176,10 +218,12 @@ export default function App() {
         <FormScreen
           values={draft}
           honeypot={honeypot}
+          hasSavedProfile={hasSavedProfile}
           onChange={patchDraft}
           onHoneypotChange={setHoneypot}
           onValid={handleValid}
           onReset={handleReset}
+          onForgetProfile={handleForgetProfile}
         />
       )}
 

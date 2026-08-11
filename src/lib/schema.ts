@@ -67,6 +67,35 @@ export type SampleRow = z.infer<typeof sampleSchema>;
 export type FormValues = z.infer<typeof formSchema>;
 
 /**
+ * Bản nháp lưu tạm: mọi ô đều có thể còn trống nên không dùng được
+ * `formSchema`. Schema này chỉ kiểm tra hình dạng dữ liệu, dùng khi đọc lại
+ * bản nháp từ localStorage — nội dung ở đó có thể sót từ phiên bản cũ hoặc
+ * bị sửa tay.
+ */
+export const draftSchema = z.object({
+  department: z.string(),
+  supervisor: z.string(),
+  studentName: z.string(),
+  studentId: z.string(),
+  email: z.string(),
+  phone: z.string(),
+  className: z.string(),
+  cohort: z.string(),
+  city: z.string(),
+  date: z.string(),
+  samples: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        state: z.string(),
+        solvent: z.string(),
+      }),
+    )
+    .min(1),
+});
+
+/**
  * Dạng thô khi đang nhập: mọi ô đều là chuỗi, kể cả ô chưa chọn.
  *
  * `id` chỉ tồn tại ở phía giao diện để React giữ đúng danh tính từng dòng khi
