@@ -1,0 +1,389 @@
+/* Base styles. Mobile-first: most students open this on a phone, so the
+   default layout is the narrow one and the wider rules are additive. */
+
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-alt: #f8f9fb;
+  --border: #d6d9e0;
+  --border-strong: #b4b9c4;
+  --text: #1c1f26;
+  --text-muted: #5c6474;
+  --accent: #1f5fa8;
+  --accent-hover: #17497f;
+  --accent-soft: #e8f0fa;
+  --danger: #b3261e;
+  --danger-soft: #fdecea;
+  --warning: #8a5a00;
+  --warning-soft: #fdf3e0;
+  --success: #1c6b3f;
+  --success-soft: #e7f4ec;
+  --radius: 8px;
+  --radius-sm: 5px;
+  --shadow: 0 1px 3px rgb(20 24 35 / 8%), 0 6px 20px rgb(20 24 35 / 5%);
+
+  color-scheme: light;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+p {
+  margin: 0;
+}
+
+/* iOS zooms the whole page when a focused input is under 16px, which throws
+   the layout off mid-typing. Keep every control at 16px on small screens. */
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  font-size: 16px;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.app {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 16px 14px 64px;
+}
+
+@media (min-width: 640px) {
+  .app {
+    padding: 32px 24px 80px;
+  }
+}
+
+/* ---------- Masthead ---------- */
+
+.masthead {
+  margin-bottom: 20px;
+}
+
+.masthead h1 {
+  font-size: 1.35rem;
+}
+
+.masthead p {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* ---------- Step indicator ---------- */
+
+.steps {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.78rem;
+}
+
+.steps li {
+  flex: 1;
+  padding: 7px 4px 0;
+  border-top: 3px solid var(--border);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.steps li[data-state="current"] {
+  border-top-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.steps li[data-state="done"] {
+  border-top-color: var(--accent);
+  color: var(--text);
+}
+
+/* ---------- Cards / sections ---------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 16px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 640px) {
+  .card {
+    padding: 22px 24px;
+  }
+}
+
+.card > h2 {
+  font-size: 1.02rem;
+  margin-bottom: 4px;
+}
+
+.card > .card-hint {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  margin-bottom: 16px;
+}
+
+/* ---------- Form fields ---------- */
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field:last-child {
+  margin-bottom: 0;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.field .req {
+  color: var(--danger);
+  margin-left: 2px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.field input[aria-invalid="true"],
+.field select[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.field input[aria-invalid="true"]:focus,
+.field select[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px var(--danger-soft);
+}
+
+.field input:disabled,
+.field select:disabled {
+  background: var(--surface-alt);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.field-error {
+  display: block;
+  margin-top: 5px;
+  color: var(--danger);
+  font-size: 0.82rem;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.field-grid {
+  display: grid;
+  gap: 0 16px;
+}
+
+@media (min-width: 560px) {
+  .field-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .field-grid .span-2 {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px; /* comfortable tap target */
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-alt);
+}
+
+.btn-ghost {
+  min-height: 36px;
+  padding: 6px 10px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-alt);
+  color: var(--text);
+}
+
+.btn-danger-ghost {
+  color: var(--danger);
+}
+
+.btn-danger-ghost:hover:not(:disabled) {
+  background: var(--danger-soft);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.actions-end {
+  justify-content: flex-end;
+}
+
+@media (max-width: 559px) {
+  .actions .btn {
+    flex: 1 1 100%;
+  }
+}
+
+/* ---------- Banners ---------- */
+
+.banner {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  font-size: 0.88rem;
+}
+
+.banner-error {
+  background: var(--danger-soft);
+  border-color: #f0c2be;
+  color: var(--danger);
+}
+
+.banner-warning {
+  background: var(--warning-soft);
+  border-color: #e8cd94;
+  color: var(--warning);
+}
+
+.banner-success {
+  background: var(--success-soft);
+  border-color: #b6dcc4;
+  color: var(--success);
+}
+
+.banner strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* ---------- Spinner ---------- */
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2s;
+  }
+}
