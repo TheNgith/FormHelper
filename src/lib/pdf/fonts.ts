@@ -24,7 +24,7 @@ export const TINOS_FAMILY = {
   },
 };
 
-function toBase64(buffer: ArrayBuffer): string {
+export function toBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   // Chuyển theo từng khối; truyền cả mảng vài trăm KB vào String.fromCharCode
   // một lần sẽ tràn số đối số cho phép của hàm.
