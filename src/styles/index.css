@@ -387,3 +387,159 @@ button {
     animation-duration: 2s;
   }
 }
+
+/* ---------- Sample list ---------- */
+
+.sample-list {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sample-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-alt);
+  padding: 14px;
+}
+
+.sample-row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sample-row-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  flex: none;
+}
+
+.sample-row-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.sample-row-tools {
+  margin-left: auto;
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.sample-count {
+  align-self: center;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+
+@media (max-width: 559px) {
+  .sample-row-head {
+    flex-wrap: wrap;
+  }
+
+  .sample-row-tools {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+
+  .actions .sample-count {
+    flex: 1 1 100%;
+    text-align: center;
+  }
+}
+
+/* ---------- Summary (review + confirmation) ---------- */
+
+.summary-list {
+  margin: 0 0 20px;
+  display: grid;
+  gap: 0;
+}
+
+.summary-list > div {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.summary-list > div:last-child {
+  border-bottom: none;
+}
+
+@media (min-width: 520px) {
+  .summary-list > div {
+    grid-template-columns: 180px 1fr;
+    gap: 12px;
+    align-items: baseline;
+  }
+}
+
+.summary-list dt {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+
+.summary-list dd {
+  margin: 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.summary-subhead {
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+}
+
+/* Bảng mẫu có thể rộng hơn màn hình điện thoại, cho cuộn ngang trong khung
+   riêng thay vì đẩy cả trang lệch sang phải. */
+.summary-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  min-width: 480px;
+}
+
+.summary-table th,
+.summary-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.summary-table thead th {
+  background: var(--surface-alt);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.summary-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.summary-table .col-stt {
+  width: 46px;
+  text-align: center;
+}
