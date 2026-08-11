@@ -29,10 +29,9 @@ pnpm-debug.log*
 *.sln
 *.sw?
 
-# Local tooling notes and transcripts, not part of the project
-CLAUDE.md
-.claude/
-.mcp.json
+# Ghi chú và bản ghi của công cụ chạy tại máy, không thuộc dự án
 *.jsonl
 scratch/
+
+# Bản PDF dựng thử
 preview/
