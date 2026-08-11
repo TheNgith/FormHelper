@@ -11,8 +11,8 @@ import {
 // Viết bằng mã ký tự thay vì gõ trực tiếp: nhiều trình soạn thảo tự chuẩn hóa
 // nội dung file, khi đó phép so sánh NFD/NFC sẽ mất ý nghĩa mà không báo lỗi.
 const E_NFC = String.fromCodePoint(0x1ec7); // ệ dang to hop san
-const E_NFD = String.fromCodePoint(0x65, 0x302, 0x323); // e + dau mu + dau nang
-const NGUYEN_NFD = 'Nguy' + String.fromCodePoint(0x65, 0x303, 0x302) + 'n';
+const E_NFD = String.fromCodePoint(0x65, 0x323, 0x302); // e + dau nang + dau mu
+const NGUYEN_NFD = 'Nguy' + String.fromCodePoint(0x65, 0x302, 0x303) + 'n';
 
 describe('nfc', () => {
   it('gộp dạng phân rã (NFD) về dạng tổ hợp sẵn', () => {
