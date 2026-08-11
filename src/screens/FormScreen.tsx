@@ -8,12 +8,21 @@ import { validateForm } from '../lib/schema';
 
 type Props = {
   values: FormDraft;
+  honeypot: string;
   onChange: (patch: Partial<FormDraft>) => void;
+  onHoneypotChange: (value: string) => void;
   onValid: (values: FormValues) => void;
   onReset: () => void;
 };
 
-export default function FormScreen({ values, onChange, onValid, onReset }: Props) {
+export default function FormScreen({
+  values,
+  honeypot,
+  onChange,
+  onHoneypotChange,
+  onValid,
+  onReset,
+}: Props) {
   const [errors, setErrors] = useState<ErrorMap>({});
   const [showSummaryError, setShowSummaryError] = useState(false);
 
@@ -79,6 +88,22 @@ export default function FormScreen({ values, onChange, onValid, onReset }: Props
         </p>
         <SampleList samples={values.samples} errors={errors} onChange={patchSamples} />
       </section>
+
+      {/* Bẫy bot: ô này ẩn với người dùng và bị bỏ qua khi duyệt bằng bàn
+          phím hay trình đọc màn hình, nhưng phần lớn bot điền tự động vẫn
+          điền vào. Máy chủ thấy ô có nội dung thì lặng lẽ bỏ đơn đó. */}
+      <div className="honeypot" aria-hidden="true">
+        <label htmlFor="website">Website</label>
+        <input
+          id="website"
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={honeypot}
+          onChange={(e) => onHoneypotChange(e.target.value)}
+        />
+      </div>
 
       <div className="actions actions-end">
         <button type="button" className="btn btn-secondary" onClick={onReset}>

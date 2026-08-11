@@ -84,9 +84,9 @@ describe('buildDocDefinition', () => {
     expect(header().text).toBe('Mã hồ sơ: IR-20260811-A7K3');
   });
 
-  it('dùng khổ A4 và lề 2 cm', () => {
+  it('dùng khổ A4 và lề 1,5 cm', () => {
     expect(doc.pageSize).toBe('A4');
-    expect(doc.pageMargins).toEqual([57, 57, 57, 57]);
+    expect(doc.pageMargins).toEqual([43, 43, 43, 43]);
   });
 
   describe('bảng mẫu đo', () => {

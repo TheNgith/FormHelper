@@ -543,3 +543,40 @@ button {
   width: 46px;
   text-align: center;
 }
+
+/* ---------- Confirmation screen ---------- */
+
+.ma-ho-so {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-alt);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: clamp(1.15rem, 5vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.disclosure {
+  width: 100%;
+  justify-content: flex-start;
+  font-size: 0.92rem;
+  color: var(--text);
+}
+
+.disclosure-body {
+  margin-top: 14px;
+}
+
+/* Ô bẫy bot: đẩy hẳn ra ngoài vùng nhìn thấy thay vì display:none, vì nhiều
+   bot bỏ qua những ô bị ẩn hoàn toàn. */
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

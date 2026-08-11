@@ -11,22 +11,28 @@ import { formatVietnameseDate, nfc } from '../text';
  * Dựng bố cục file PDF theo đúng mẫu giấy của bộ môn.
  *
  * Mọi khoảng cách đều tính bằng point (1 pt = 1/72 inch) để khi in ở tỉ lệ
- * 100% trên khổ A4 thì lề khớp với bản in sẵn: lề 57 pt ≈ 2 cm.
+ * 100% trên khổ A4 thì lề khớp với bản in sẵn: lề 43 pt ≈ 1,5 cm.
+ *
+ * Các con số dưới đây được chọn để một đơn cỡ trung bình nằm gọn trong một
+ * trang. Khổ A4 chỉ cao 842 pt, mà riêng ba ô chữ ký đã chiếm gần một phần
+ * tư trang, nên với bản 13 pt / lề 2 cm thì ngay cả đơn một mẫu cũng tràn
+ * sang trang thứ hai. Bản nén này chứa được sáu mẫu trên một trang; đơn dài
+ * hơn vẫn tự sang trang mới và khối chữ ký luôn đi liền một chỗ.
  */
 
-const BASE_FONT_SIZE = 13;
-const LINE_HEIGHT = 1.35;
-const PAGE_MARGIN = 57;
+const BASE_FONT_SIZE = 12;
+const LINE_HEIGHT = 1.2;
+const PAGE_MARGIN = 43;
 
 /** Khoảng trống chừa cho chữ ký tay. */
-const SIGNATURE_SPACE = 90;
+const SIGNATURE_SPACE = 55;
 
 /**
- * Bề rộng của chuỗi "Kính gửi: " ở Tinos 13 pt, đo từ bảng metric của phông.
- * Dùng làm mức thụt đầu dòng để tên giảng viên nằm thẳng cột với tên bộ môn
- * ở dòng trên.
+ * Bề rộng của chuỗi "Kính gửi: " ở cỡ chữ nền, đo từ bảng metric của phông
+ * Tinos. Dùng làm mức thụt đầu dòng để tên giảng viên nằm thẳng cột với tên
+ * bộ môn ở dòng trên.
  */
-const KINH_GUI_INDENT = 53.3;
+const KINH_GUI_INDENT = 49.2;
 
 export type PdfData = {
   values: FormValues;
