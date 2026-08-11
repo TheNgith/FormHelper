@@ -2,10 +2,11 @@
  * Dựng thử file PDF ngoài trình duyệt để soi bố cục nhanh khi chỉnh khoảng
  * cách, không cần mở web và điền lại biểu mẫu.
  *
- *   npx tsx scripts/preview-pdf.ts [đường-dẫn-ra.pdf]
+ *   npx tsx scripts/preview-pdf.ts [đường-dẫn-ra.pdf] [số-mẫu]
  *
  * Dữ liệu mẫu lấy theo đơn tham chiếu của bộ môn, kèm vài ký tự có dấu chồng
- * để kiểm tra phông: ẫ ệ ượ ỹ Đ ồ.
+ * để kiểm tra phông: ẫ ệ ượ ỹ Đ ồ. Truyền thêm số mẫu để dựng đơn dài, dùng
+ * khi cần xem cách bảng ngắt trang.
  */
 
 import { mkdirSync } from 'node:fs';
@@ -53,12 +54,26 @@ const fonts = {
 };
 
 const out = resolve(process.argv[2] ?? 'preview/don-mau.pdf');
+const sampleCount = Number(process.argv[3]);
+
+// Đơn dài thì lặp lại danh sách mẫu cho đủ số lượng, đánh số để dễ dò khi
+// xem bảng ngắt trang ở đâu.
+const values: FormValues = Number.isFinite(sampleCount)
+  ? {
+      ...SAMPLE,
+      samples: Array.from({ length: sampleCount }, (_, i) => {
+        const base = SAMPLE.samples[i % SAMPLE.samples.length];
+        return { ...base, name: `${i + 1}. ${base.name}` };
+      }),
+    }
+  : SAMPLE;
+
 mkdirSync(dirname(out), { recursive: true });
 
 pdfMake.setFonts(fonts);
 
 await pdfMake
-  .createPdf(buildDocDefinition({ values: SAMPLE, maHoSo: 'IR-20260811-A7K3' }))
+  .createPdf(buildDocDefinition({ values, maHoSo: 'IR-20260811-A7K3' }))
   .write(out);
 
 console.log(`Đã ghi ${out}`);
