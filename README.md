@@ -331,18 +331,27 @@ Lệch một nơi là trang trắng hoặc nút "Tải PDF" hỏng:
 | --- | --- |
 | `base` trong [vite.config.ts](vite.config.ts) | `/ir-form/` |
 | `build.outDir` cùng file | `dist/ir-form` |
-| `redirects` trong [firebase.json](firebase.json) | `/ir-form` → `/ir-form/` |
+| `trailingSlash` trong [firebase.json](firebase.json) | `true` — chốt `/ir-form/` là dạng chuẩn |
 | Bảng định tuyến của proxy | `/ir-form` → site này |
 
-`firebase.json` còn một dòng nữa: `/` → `/ir-form/`. Nó chỉ có tác dụng khi mở
-thẳng `<project>.web.app`, để gốc của site không phải một ngõ cụt lúc dò lỗi.
-Qua proxy thì `/` đã do trang chủ trả lời, không bao giờ chạm tới đây.
+`firebase.json` còn một dòng `redirects` nữa: `/` → `/ir-form/`. Nó chỉ có tác
+dụng khi mở thẳng `<project>.web.app`, để gốc của site không phải một ngõ cụt
+lúc dò lỗi. Qua proxy thì `/` đã do trang chủ trả lời, không bao giờ chạm tới
+đây.
+
+**Đừng thêm lại `redirects` dạng `/ir-form` → `/ir-form/`.** Nó từng có trong
+`firebase.json` và đã làm sập site: khi so khớp `source`, Firebase Hosting bỏ
+gạch chéo cuối, nên `/ir-form/` cũng khớp luôn `source: "/ir-form"` và bị đẩy
+về chính nó — vòng lặp 301 vô tận, mọi địa chỉ đều không mở được. Việc thêm
+gạch chéo giờ do `trailingSlash: true` lo, và nó xử lý ở tầng phân giải tệp
+chứ không phải tầng `redirects`, nên không tự khớp lại.
 
 `base` là đường dẫn **tuyệt đối** chứ không phải `./` như bản trước. Với `./`
 thì địa chỉ được phân giải theo URL đang mở, nên ai gõ thiếu dấu gạch cuối sẽ
 làm `fonts/` trỏ về gốc tên miền — tức là sang trang chủ. Trang vẫn hiện, chỉ
 có nút "Tải PDF" chết, đúng loại lỗi mà người xây dựng không bao giờ gặp vì họ
-luôn mở đúng địa chỉ. Dòng `redirects` bịt nốt trường hợp đó ở phía máy chủ.
+luôn mở đúng địa chỉ. `trailingSlash: true` bịt nốt trường hợp đó ở phía máy
+chủ: ai gõ thiếu gạch cuối sẽ bị đẩy về `/ir-form/` trước khi trang kịp tải.
 
 ### Cái giá của việc dùng chung một tên miền
 
@@ -359,7 +368,29 @@ vấn đề này nhưng cũng không có trang chủ chung.
 1. Vào **Settings → Secrets and variables → Actions** của repo:
    - *Variables*: `VITE_FIREBASE_*` và `VITE_RECAPTCHA_SITE_KEY`.
    - *Secrets*: `FIREBASE_SERVICE_ACCOUNT` — nội dung JSON của một service
-     account có quyền Firebase Hosting Admin và Firebase Rules Admin.
+     account có đủ bốn vai trò IAM:
+
+     - **Firebase Hosting Admin** (`roles/firebasehosting.admin`) — đẩy bản dựng.
+     - **Firebase Rules Admin** (`roles/firebaserules.admin`) — đẩy `firestore.rules`.
+     - **Cloud Datastore Owner** (`roles/datastore.owner`) — đọc database và
+       chỉ mục hiện có để so sánh trước khi triển khai.
+     - **Service Usage Consumer** (`roles/serviceusage.serviceUsageConsumer`)
+       — vai trò dễ quên nhất. Trước khi đụng tới `firestore`,
+       `firebase deploy` hỏi Service Usage xem `firestore.googleapis.com` đã
+       bật chưa. Thiếu vai trò này thì lệnh chết ngay ở câu hỏi đó —
+       `HTTP Error: 403, Permission denied to get service` — khi chưa đẩy gì
+       lên. Không có cờ nào bỏ qua bước kiểm tra ấy, và thu hẹp thành
+       `--only hosting,firestore:rules` cũng không thoát: nó chạy trước khi
+       firebase-tools nhìn tới `--only`.
+
+     Mỗi vai trò cấp bằng một lệnh, `--member` lấy từ trường `client_email`
+     trong khóa JSON:
+
+     ```sh
+     gcloud projects add-iam-policy-binding formhelper-1f657 \
+       --member=serviceAccount:<client_email> \
+       --role=roles/serviceusage.serviceUsageConsumer
+     ```
 2. Đẩy code lên nhánh `main`.
    [Workflow](.github/workflows/deploy.yml) chạy kiểm tra, dựng, rồi triển
    khai **cả hosting lẫn `firestore.rules`** trong một bước — để rules không

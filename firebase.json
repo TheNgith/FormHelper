@@ -7,8 +7,8 @@
     "public": "dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "cleanUrls": true,
+    "trailingSlash": true,
     "redirects": [
-      { "source": "/ir-form", "destination": "/ir-form/", "type": 301 },
       { "source": "/", "destination": "/ir-form/", "type": 301 }
     ],
     "headers": [
