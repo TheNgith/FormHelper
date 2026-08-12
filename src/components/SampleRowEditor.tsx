@@ -67,10 +67,10 @@ export default function SampleRowEditor({
             type="button"
             className="btn btn-ghost"
             onClick={onDuplicate}
-            aria-label={`Nhân đôi mẫu ${index + 1}`}
+            aria-label={`Nhân bản mẫu ${index + 1}`}
             title="Nhân đôi dòng"
           >
-            Nhân đôi
+            Nhân bản
           </button>
           <button
             type="button"

@@ -454,6 +454,13 @@ Bốn chỗ cố ý lệch khỏi bản vẽ, đều có lý do:
 Hệ thiết kế gốc không có màu báo lỗi — nó chỉ có màu đồng và màu trung tính.
 Ba màu đỏ gạch trong `--color-danger*` là phần thêm, chọn theo cùng gam ấm.
 
+**Chữ trên màn hình lấy đúng từ bản vẽ, không thêm chữ nào.** Bản vẽ để cột
+trái chỉ có tiêu đề mục, ô nhập chỉ có nhãn và một hai câu nhắc thật ngắn —
+giữ đúng như vậy. Chỗ duy nhất có chữ không nằm trong bản vẽ là những trạng
+thái mà bản vẽ không vẽ tới: câu báo lỗi cạnh ô sai, băng "chưa gửi được
+đơn", nhãn lúc đang chờ ("Đang gửi…"), nhãn cho trình đọc màn hình, và nút
+`[dev] Xem thử PDF` chỉ có khi chạy `npm run dev`.
+
 Hai phông tải từ Google Fonts (khai trong [index.html](index.html)) và **không
 liên quan gì tới file PDF**: PDF nhúng Libertinus thẳng vào tệp. Mạng chặn
 Google Fonts thì trang chỉ đổi dáng chữ sang phông dự phòng, đơn in ra vẫn y

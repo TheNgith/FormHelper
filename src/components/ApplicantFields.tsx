@@ -79,7 +79,7 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
       <div className="field span-2">
         <label htmlFor="department">Kính gửi</label>
         <input id="department" type="text" value={values.department} disabled />
-        <span className="field-hint">Bộ môn phụ trách thiết bị, không thay đổi.</span>
+        <span className="field-hint">Không thay đổi mục này</span>
       </div>
 
       {/* Ba ô rời: cách xưng hô, học hàm học vị, tên. Nhãn chung nằm trên một
@@ -179,7 +179,7 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
         className="span-2"
         value={values.email}
         error={errors.email}
-        hint="Dùng địa chỉ trường cấp (@ump.edu.vn) để bộ môn liên hệ lại được."
+        hint="Dùng địa chỉ @ump.edu.vn"
         type="email"
         inputMode="email"
         autoComplete="email"
@@ -200,7 +200,6 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
         label="Niên khóa"
         value={values.cohort}
         error={errors.cohort}
-        hint="Dạng 2022 - 2026"
         autoComplete="off"
         placeholder="2022 - 2026"
         onChange={(v) => onChange({ cohort: v })}

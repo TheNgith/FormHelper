@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 import ApplicantFields from '../components/ApplicantFields';
 import SampleList from '../components/SampleList';
-import { EQUIPMENT } from '../lib/constants';
 import type { ErrorMap, FormDraft, FormValues, SampleDraft } from '../lib/schema';
 import { validateForm } from '../lib/schema';
 
@@ -75,24 +74,16 @@ export default function FormScreen({
       <section className="section">
         <div className="section-head">
           <h2>Người làm đơn</h2>
-          <p className="section-note">
-            Được in nguyên văn lên đơn — kiểm tra kỹ chính tả.
-          </p>
         </div>
         <div className="section-body">
           <ApplicantFields values={values} errors={errors} onChange={patchField} />
 
-          {/* Không còn đăng nhập nên thông tin đã lưu — nay có cả địa chỉ email
-              — sống qua nhiều phiên trình duyệt trên cùng một máy. Nút dọn vì
-              vậy là một nút thật, đặt ngay dưới các ô nó điền vào, chứ không
-              phải một dòng chữ nhỏ ở chân trang. Máy trong phòng thí nghiệm
-              dùng chung. */}
+          {/* Bản thiết kế không có khối này. Giữ lại đúng cái nút, bỏ đoạn văn
+              giải thích: máy trong phòng thí nghiệm dùng chung, và thông tin
+              đã lưu có cả địa chỉ email — phải có đường dọn. Nhãn nút tự nó
+              đã nói hết. */}
           {hasSavedProfile && (
             <div className="profile-note">
-              <p>
-                Thông tin trên, kể cả email, được điền sẵn từ lần nộp trước và
-                lưu ngay trên máy này.
-              </p>
               <button type="button" className="btn btn-secondary" onClick={onForgetProfile}>
                 Quên thông tin đã lưu
               </button>
@@ -108,10 +99,6 @@ export default function FormScreen({
           <h2>Các mẫu đo</h2>
           <p className="section-count" aria-live="polite">
             {values.samples.length} mẫu
-          </p>
-          <p className="section-note">
-            Những mẫu cần đo trên {EQUIPMENT}. Số thứ tự được đánh tự động theo
-            đúng thứ tự bên dưới.
           </p>
         </div>
         <div className="section-body">

@@ -67,7 +67,7 @@ export default function SummaryView({ values }: Props) {
                 STT
               </th>
               <th scope="col">Tên mẫu</th>
-              <th scope="col">Trạng thái mẫu</th>
+              <th scope="col">Trạng thái</th>
               <th scope="col">Dung môi có thể hòa tan</th>
             </tr>
           </thead>

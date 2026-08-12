@@ -55,10 +55,6 @@ export default function ConfirmationScreen({ values, maHoSo, onRestart }: Props)
           <p className="next-step">
             In và xin đủ các chữ ký. Sau đó nộp cho người phụ trách thiết bị.
           </p>
-          <p className="next-step-note">
-            File PDF khổ A4, in ở tỉ lệ 100%. Tải lại bao nhiêu lần cũng ra
-            đúng file như nhau.
-          </p>
           <button
             type="button"
             className="btn btn-primary"

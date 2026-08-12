@@ -29,9 +29,7 @@ export default function ReviewScreen({
   return (
     <>
       <div className="notice notice-accent">
-        <span>
-          Đơn chưa được gửi. Xác nhận lại thông tin rồi bấm “Xác nhận và gửi”.
-        </span>
+        <span>Xác nhận lại thông tin.</span>
       </div>
 
       {error && (
