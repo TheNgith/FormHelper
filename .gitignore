@@ -24,8 +24,20 @@ pnpm-debug.log*
 
 # Khóa service account cho scripts/export-csv.ts. Bí mật thật sự duy nhất của
 # dự án, và nó chỉ được sống trên máy người phụ trách.
+#
+# Tên mặc định khi tải từ Firebase console là dạng
+# <project>-firebase-adminsdk-<hash>.json — *không* chứa chữ "service-account",
+# nên hai dòng đầu tiên viết theo trực giác đã để lọt đúng cái tệp mà người ta
+# thật sự tải về. Dòng `*firebase-adminsdk*` mới là dòng có tác dụng.
+#
+# Lưới an toàn thôi, không phải biện pháp: chỗ đúng của khóa là *ngoài* thư mục
+# kho mã. Kho này công khai — một lần `git add -A` là khóa nằm trên Internet
+# vĩnh viễn.
 *service-account*.json
-serviceAccountKey.json
+*serviceAccount*.json
+*firebase-adminsdk*.json
+*.pem
+*.p12
 
 # Bản xuất CSV — chứa dữ liệu cá nhân của sinh viên
 *.csv
