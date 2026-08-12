@@ -13,10 +13,22 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
-# Environment — the endpoint and token are per-deployment, never committed
+# Environment — per-deployment values, never committed
 .env
 .env.*
 !.env.example
+
+# Firebase — bộ nhớ đệm của CLI và dữ liệu emulator xuất ra
+.firebase/
+.emulator-data/
+
+# Khóa service account cho scripts/export-csv.ts. Bí mật thật sự duy nhất của
+# dự án, và nó chỉ được sống trên máy người phụ trách.
+*service-account*.json
+serviceAccountKey.json
+
+# Bản xuất CSV — chứa dữ liệu cá nhân của sinh viên
+*.csv
 
 # Editor / OS
 .vscode/*
@@ -35,3 +47,6 @@ scratch/
 
 # Bản PDF dựng thử
 preview/
+
+# Tài liệu
+docs/

@@ -7,17 +7,15 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # Đang deploy dở mà có commit mới thì để lần chạy trước xong đã, tránh hai
 # lần cùng ghi đè lên nhau.
 concurrency:
-  group: pages
+  group: deploy
   cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,33 +25,48 @@ jobs:
           node-version: 22
           cache: npm
 
+      # Firestore emulator chạy trên JVM. Không có bước này thì bài kiểm tra
+      # firestore.rules — tức là bài kiểm tra ranh giới bảo mật — lặng lẽ
+      # không chạy được.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
       - run: npm ci
 
       - run: npm test
 
       - run: npm run build
         env:
-          # Địa chỉ Apps Script và token nằm trong Settings -> Secrets and
-          # variables -> Actions của repo. Xem mục "Bảo mật" trong README:
-          # cả hai giá trị này đều đọc được từ gói JavaScript đã build.
-          VITE_SHEETS_ENDPOINT: ${{ secrets.VITE_SHEETS_ENDPOINT }}
-          VITE_SHEETS_TOKEN: ${{ secrets.VITE_SHEETS_TOKEN }}
+          # Đây là *variables* chứ không phải *secrets*, và đó là cố ý: cấu
+          # hình web của Firebase nằm sẵn trong gói JavaScript gửi xuống trình
+          # duyệt. Nó là định danh dự án, không phải khóa. Khóa site của
+          # reCAPTCHA cũng vậy — nó phải nằm trong trang thì reCAPTCHA mới
+          # chạy được. Xem mục "Bảo mật" trong README.
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+          VITE_RECAPTCHA_SITE_KEY: ${{ vars.VITE_RECAPTCHA_SITE_KEY }}
 
-      # Cách triển khai này không chạy Jekyll, nhưng thêm file cho chắc để
-      # nếu sau có ai chuyển sang deploy thẳng từ nhánh thì cũng không bị
-      # Jekyll bỏ qua mất thư mục nào.
-      - run: touch dist/.nojekyll
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      # Bí mật thật sự duy nhất của dự án, và nó không bao giờ tới trình duyệt.
+      #
+      # Triển khai cả hosting lẫn firestore rules trong cùng một bước: rules là
+      # ranh giới bảo mật của ứng dụng, để nó lệch phiên bản với mã nguồn đang
+      # chạy là mở ra đúng loại lỗ hổng mà bộ rules này sinh ra để bịt.
+      - name: Deploy hosting và Security Rules
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          credentials="$RUNNER_TEMP/firebase-service-account.json"
+          trap 'rm -f "$credentials"' EXIT
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$credentials"
+          GOOGLE_APPLICATION_CREDENTIALS="$credentials" \
+            npx firebase deploy \
+              --only hosting,firestore \
+              --project "$FIREBASE_PROJECT_ID" \
+              --non-interactive
