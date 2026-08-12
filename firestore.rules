@@ -1,0 +1,108 @@
+rules_version = '2';
+
+// Một nửa ranh giới bảo mật của ứng dụng. Nửa kia là App Check, và nó không
+// nằm trong tệp này.
+//
+// Ứng dụng không còn đăng nhập. Không có `request.auth`, không có danh tính,
+// nên rules dưới đây *không biết ai đang gọi* — chúng chỉ biết hình dạng của
+// thứ được ghi. Đừng đọc chúng như một lớp chống mạo danh: một người ngồi
+// trên đúng trang web, gõ tên người khác, sẽ đi qua toàn bộ tệp này.
+//
+// Việc chặn script, bot và curl thuộc về App Check (reCAPTCHA v3), bật bằng
+// một công tắc trong Firebase console → App Check → Cloud Firestore. Rules
+// không nhìn thấy nó: `request.app` chỉ tồn tại trong callable Cloud
+// Functions, còn với Firestore thì App Check là cái cổng đứng trước *toàn bộ*
+// API. Emulator bỏ qua App Check hoàn toàn, nên không có bài kiểm tra nào ở
+// đây chứng minh được cổng đó đang hoạt động — xem đầu firestore.rules.test.ts.
+//
+// Sửa file này thì phải sửa cả firestore.rules.test.ts.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function boundedString(value, maxLength) {
+      return value is string && value.size() >= 1 && value.size() <= maxLength;
+    }
+
+    match /submissions/{maHoSo} {
+
+      // Đúng những khóa này, không thừa không thiếu. Không chốt danh sách thì
+      // một lần ghi hợp lệ vẫn kèm được vài trăm KB dưới khóa lạ.
+      function hasExactKeys(data) {
+        return data.keys().hasOnly([
+          'maHoSo', 'createdAt',
+          'studentName', 'studentId', 'email', 'phone', 'className', 'cohort',
+          'department', 'supervisor', 'city', 'requestDate', 'samples'
+        ]) && data.keys().hasAll([
+          'maHoSo', 'createdAt',
+          'studentName', 'studentId', 'email', 'phone', 'className', 'cohort',
+          'department', 'supervisor', 'city', 'requestDate', 'samples'
+        ]);
+      }
+
+      // Không phải toàn bộ formSchema, chỉ những ràng buộc mà vi phạm thì tốn
+      // kém: kiểu dữ liệu, có mặt, và giới hạn kích thước.
+      //
+      // ID tài liệu cũng bị chốt dạng. Hồi còn đăng nhập thì ID coi như đáng
+      // tin vì chỉ sinh viên đã xác thực mới ghi được; nay ai cũng tự đặt được
+      // nên `IR-YYYYMMDD-XXXXXX` phải do máy chủ ép. Nhờ vậy bộ sưu tập giữ
+      // được một dạng khóa duy nhất và script xuất CSV vẫn sắp đúng thứ tự.
+      //
+      // `email` vẫn còn, nhưng nay là do sinh viên tự gõ: nó được in lên đơn
+      // và là cách bộ môn liên hệ lại. Cố ý *không* ép đuôi @ump.edu.vn — giá
+      // trị này tự khai nên ràng buộc đó không chứng minh được gì, mà lại đủ
+      // sức chặn thẳng một lá đơn thật bằng một câu `permission-denied` khó
+      // hiểu. Lời nhắc về địa chỉ trường nằm cạnh ô nhập, nơi sinh viên đọc
+      // được và sửa được.
+      function wellFormed(data) {
+        return data.maHoSo == maHoSo
+          && maHoSo.matches('^IR-[0-9]{8}-[0-9A-HJKMNP-TV-Z]{6}$')
+          && data.createdAt == request.time
+          && boundedString(data.studentName, 100)
+          && data.studentId.matches('^[0-9]{6,12}$')
+          && boundedString(data.email, 200)
+          && data.phone.matches('^0[0-9]{9}$')
+          && boundedString(data.className, 100)
+          && boundedString(data.cohort, 20)
+          && boundedString(data.department, 200)
+          && boundedString(data.supervisor, 200)
+          && boundedString(data.city, 100)
+          && data.requestDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          && data.samples is list
+          && data.samples.size() >= 1
+          && data.samples.size() <= 60;
+      }
+
+      // Chỉ cho `create`: khóa tài liệu theo mã hồ sơ nên một mã chỉ ghi được
+      // đúng một lần. Đó cũng là lý do lần gửi lại sau khi mất mạng cần được
+      // xử lý riêng — xem bẫy gửi lại trong src/lib/submissions.ts.
+      //
+      // `createdAt == request.time` vẫn đáng giữ: máy khách nói dối được mọi
+      // thứ khác nhưng không lùi được ngày nộp.
+      //
+      // Rules không duyệt được từng phần tử của `samples`, nên chặn số lượng
+      // là mức khả thi. Trần thật sự là giới hạn 1 MiB mỗi tài liệu của
+      // Firestore. Trước đây ai nhồi 60 mẫu vớ vẩn thì còn truy ra được danh
+      // tính, nay thì không — chấp nhận, vì thiệt hại là một tài liệu vô dụng.
+      allow create: if hasExactKeys(request.resource.data)
+        && wellFormed(request.resource.data);
+
+      // Không trình duyệt nào đọc được gì. Mở dù chỉ một đường đọc là cho
+      // người lạ dò ID tài liệu để gom tên, mã số sinh viên và số điện thoại —
+      // và không còn danh tính nào để thu hẹp quyền đọc theo người gửi.
+      //
+      // Bộ môn lấy dữ liệu bằng scripts/export-csv.ts, chạy tại máy với
+      // service account: nó đi vòng qua cả rules lẫn App Check.
+      allow read: if false;
+
+      // Đơn đã nộp là bản ghi cố định. Sửa hay xóa thì làm trong Firebase
+      // console, có ghi vết, chứ không qua ứng dụng này.
+      allow update, delete: if false;
+    }
+
+    // Mọi đường dẫn khác đều đóng.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

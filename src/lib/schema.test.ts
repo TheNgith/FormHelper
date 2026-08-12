@@ -8,7 +8,7 @@ function draft(overrides: Partial<FormDraft> = {}): FormDraft {
     ...emptyForm(),
     studentName: 'Nguyễn Thị Ngọc Ánh',
     studentId: '2200123',
-    email: 'ngocanh@example.com',
+    email: 'ngocanh@ump.edu.vn',
     phone: '0912345678',
     className: 'D2A',
     cohort: '2022 - 2026',
@@ -108,8 +108,15 @@ describe('validateForm', () => {
   });
 
   describe('email', () => {
-    it.each(['khong-phai-email', 'a@', '@b.com'])('từ chối %o', (email) => {
+    it.each(['khong-phai-email', 'a@', '@b.com', ''])('từ chối %o', (email) => {
       expect(validateForm(draft({ email })).ok).toBe(false);
+    });
+
+    it('chấp nhận địa chỉ ngoài trường', () => {
+      // Ô này nay do sinh viên tự gõ. Đuôi @ump.edu.vn là lời nhắc cạnh ô
+      // nhập, không phải một ràng buộc — nó không chứng minh được gì nữa mà
+      // vẫn đủ sức chặn nhầm một lá đơn thật.
+      expect(validateForm(draft({ email: 'ngocanh@gmail.com' })).ok).toBe(true);
     });
   });
 });

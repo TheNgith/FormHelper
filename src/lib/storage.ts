@@ -14,7 +14,20 @@ import { draftSchema, emptyForm, newRowId, todayISO } from './schema';
 const DRAFT_KEY = 'don-thiet-bi:ban-nhap';
 const PROFILE_KEY = 'don-thiet-bi:thong-tin-ca-nhan';
 
-/** Những ô lặp lại ở mọi lần nộp đơn của cùng một sinh viên. */
+/**
+ * Những ô lặp lại ở mọi lần nộp đơn của cùng một sinh viên.
+ *
+ * `email` nằm trong này, và trước đây thì không — lý do cũ đã lật ngược hoàn
+ * toàn. Hồi còn đăng nhập, email đến từ token ở mỗi lần mở trang, nên một bản
+ * sao cũ trong localStorage chỉ có thể *che mất* giá trị đúng. Nay không còn
+ * token nào: không nhớ thì sinh viên phải gõ lại địa chỉ của mình mỗi lần nộp
+ * đơn, và một địa chỉ gõ vội là một lá đơn bộ môn không liên hệ lại được.
+ *
+ * Cái giá là máy dùng chung trong phòng thí nghiệm nay nhớ cả email của người
+ * trước, qua nhiều phiên trình duyệt. Vì vậy nút "Quên thông tin đã lưu" trên
+ * màn hình nhập không còn là một tiện ích nhỏ — nó là cách duy nhất để dọn,
+ * và FormScreen để nó ở chỗ đọc thấy được.
+ */
 export type Profile = Pick<
   FormValues,
   'studentName' | 'studentId' | 'email' | 'phone' | 'className' | 'cohort'
@@ -118,4 +131,12 @@ export function hasProfile(): boolean {
 export function freshForm(profile: Profile | null): FormDraft {
   const base = emptyForm();
   return profile ? { ...base, ...profile, date: todayISO() } : base;
+}
+
+/**
+ * Biểu mẫu lúc vừa vào trang: ưu tiên bản nháp đang dở, không có thì mở biểu
+ * mẫu trống đã điền sẵn thông tin của lần nộp trước.
+ */
+export function initialForm(): FormDraft {
+  return loadDraft() ?? freshForm(loadProfile());
 }

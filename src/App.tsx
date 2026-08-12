@@ -8,12 +8,12 @@ import { generateMaHoSo } from './lib/maHoSo';
 import type { FormDraft, FormValues } from './lib/schema';
 import { emptyForm } from './lib/schema';
 import { clearSubmitted, loadSubmitted, saveSubmitted } from './lib/session';
-import { SubmitError, buildPayload, submitToSheet } from './lib/sheets';
+import { SubmitError, submitForm } from './lib/submissions';
 import {
   clearDraft,
   clearProfile,
   freshForm,
-  loadDraft,
+  initialForm,
   loadProfile,
   saveDraft,
   saveProfile,
@@ -31,15 +31,19 @@ const STEP_ORDER: Screen[] = ['form', 'review', 'done'];
 
 export default function App() {
   // Đọc sessionStorage đúng một lần khi khởi tạo, không đọc lại mỗi lần vẽ.
-  const [restored] = useState(loadSubmitted);
+  //
+  // Chỗ này từng đối chiếu email của đơn đã lưu với email trong token, để máy
+  // dùng chung trong phòng thí nghiệm không đưa đơn của người trước cho người
+  // sau. Không còn token nên không còn gì để đối chiếu — nhưng mức phơi bày
+  // cũng tự hẹp lại: sessionStorage sống trong đúng một tab và chết theo tab
+  // đó, còn "Tạo đơn mới" và "Xóa hết" vẫn dọn được bằng tay.
+  const [restored] = useState(() => loadSubmitted());
 
   const [screen, setScreen] = useState<Screen>(restored ? 'done' : 'form');
 
   // Ưu tiên bản nháp đang dở; nếu không có thì mở biểu mẫu trống đã điền sẵn
   // thông tin cá nhân của lần nộp trước.
-  const [draft, setDraft] = useState<FormDraft>(
-    () => loadDraft() ?? freshForm(loadProfile()),
-  );
+  const [draft, setDraft] = useState<FormDraft>(() => initialForm());
   const [hasSavedProfile, setHasSavedProfile] = useState(() => loadProfile() !== null);
 
   const [reviewed, setReviewed] = useState<FormValues | null>(restored?.values ?? null);
@@ -47,20 +51,29 @@ export default function App() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  /** Ô bẫy bot, luôn rỗng nếu người điền là người thật. */
-  const [honeypot, setHoneypot] = useState('');
-
   /** Nội dung đúng như lúc gửi đi — màn hình xác nhận đọc từ đây chứ không
-   *  đọc lại biểu mẫu, để bản in luôn khớp với dòng đã ghi vào bảng. */
+   *  đọc lại biểu mẫu, để bản in luôn khớp với đơn đã ghi. */
   const [submitted, setSubmitted] = useState(restored);
 
   /**
    * Mã hồ sơ sinh một lần duy nhất, ở lần bấm "Xác nhận và gửi" đầu tiên.
-   * Gửi lại sau khi lỗi phải dùng lại đúng mã cũ: nếu lần trước thực ra đã
-   * ghi được mà chỉ mất phản hồi, thì máy chủ nhận ra mã trùng và bỏ qua,
-   * thay vì tạo thêm một dòng nữa dưới mã khác.
+   * Gửi lại sau khi lỗi phải dùng lại đúng mã cũ: mã hồ sơ chính là khóa của
+   * tài liệu trong Firestore, nên nếu lần trước thực ra đã ghi được mà chỉ
+   * mất phản hồi thì lần này Firestore từ chối, và đó là dấu hiệu để đi tiếp
+   * — xem bẫy gửi lại trong lib/submissions.ts.
    */
   const maHoSoRef = useRef<string | null>(null);
+
+  /**
+   * Lần bấm gửi trước cho mã hồ sơ ở trên có hỏng theo kiểu không kết luận
+   * được hay không.
+   *
+   * Đây là toàn bộ những gì còn lại của cái từng là một lượt đọc tài liệu:
+   * không còn đường đọc nào cho trình duyệt, nên câu hỏi "đơn đã nằm đó chưa"
+   * được trả lời bằng lịch sử các lần bấm. Đi liền với maHoSoRef và phải được
+   * dọn cùng lúc với nó.
+   */
+  const inconclusiveRef = useRef(false);
 
   // Trình xử lý popstate được đăng ký một lần nên không thấy được state mới;
   // đọc qua ref để luôn lấy giá trị hiện tại.
@@ -145,6 +158,7 @@ export default function App() {
     clearSubmitted();
     clearDraft();
     maHoSoRef.current = null;
+    inconclusiveRef.current = false;
     setSubmitted(null);
     setDraft(freshForm(loadProfile()));
     setReviewed(null);
@@ -161,24 +175,31 @@ export default function App() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      await submitToSheet(buildPayload(reviewed, maHoSo, honeypot));
+      await submitForm(reviewed, maHoSo, {
+        previousAttemptInconclusive: inconclusiveRef.current,
+      });
 
       const record = { maHoSo, values: reviewed };
       saveSubmitted(record);
       setSubmitted(record);
       submittedRef.current = record;
 
-      // Đơn đã nằm trong bảng nên bản nháp không còn cần nữa; giữ lại thông
-      // tin cá nhân để lần nộp sau chỉ phải nhập danh sách mẫu.
+      // Đơn đã ghi xong nên bản nháp không còn cần nữa; giữ lại thông tin cá
+      // nhân để lần nộp sau chỉ phải nhập danh sách mẫu.
       clearDraft();
       saveProfile(reviewed);
       setHasSavedProfile(true);
 
       go('done');
     } catch (error) {
+      // Nhớ lại kiểu hỏng của lần này: nó là thứ duy nhất giúp lần bấm sau
+      // phân biệt "đơn đã ghi được từ trước" với "máy chủ từ chối thật".
+      inconclusiveRef.current =
+        error instanceof SubmitError ? error.inconclusive : true;
+
       // Theo quyết định của bộ môn: ghi không được thì dừng ở màn hình xem
-      // lại, không cho đi tiếp. Bản in và dòng trong bảng nhờ vậy không bao
-      // giờ lệch nhau.
+      // lại, không cho đi tiếp. Bản in và đơn đã lưu nhờ vậy không bao giờ
+      // lệch nhau.
       setSubmitError(
         error instanceof SubmitError
           ? error.message
@@ -217,10 +238,8 @@ export default function App() {
       {screen === 'form' && (
         <FormScreen
           values={draft}
-          honeypot={honeypot}
           hasSavedProfile={hasSavedProfile}
           onChange={patchDraft}
-          onHoneypotChange={setHoneypot}
           onValid={handleValid}
           onReset={handleReset}
           onForgetProfile={handleForgetProfile}
