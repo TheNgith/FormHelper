@@ -4,7 +4,7 @@ import type {
   TDocumentDefinitions,
 } from 'pdfmake/interfaces';
 
-import { EQUIPMENT, LETTERHEAD, SCHOOL, supervisorFullLabel } from '../constants';
+import { EQUIPMENT, LETTERHEAD, SCHOOL, supervisorSignatureName } from '../constants';
 import type { FormValues } from '../schema';
 import { formatVietnameseDate, nfc } from '../text';
 import { PDF_FONT } from './fonts';
@@ -99,7 +99,7 @@ export function buildDocDefinition({ values, maHoSo }: PdfData): TDocumentDefini
   }));
 
   const department = nfc(values.department);
-  const supervisor = nfc(supervisorFullLabel(values.supervisor));
+  const supervisor = nfc(values.supervisor);
 
   return {
     pageSize: 'A4',
@@ -266,7 +266,9 @@ export function buildDocDefinition({ values, maHoSo }: PdfData): TDocumentDefini
       {
         unbreakable: true,
         columns: [
-          signature('Giảng viên hướng dẫn', values.supervisor),
+          // Tên dưới dòng kẻ ký không mang "Thầy"/"Cô" — đó là lời của sinh
+          // viên trong câu văn, không phải một phần của tên người ký.
+          signature('Giảng viên hướng dẫn', supervisorSignatureName(supervisor)),
           signature('Người làm đơn', values.studentName),
         ],
       },

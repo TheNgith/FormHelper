@@ -1,4 +1,4 @@
-import { SUPERVISORS, supervisorFullLabel } from '../lib/constants';
+import { SUPERVISOR_HONORIFICS, SUPERVISOR_TITLES } from '../lib/constants';
 import type { ErrorMap, FormDraft } from '../lib/schema';
 
 type Props = {
@@ -66,6 +66,12 @@ function TextField({
 }
 
 export default function ApplicantFields({ values, errors, onChange }: Props) {
+  // Ba ô của giảng viên dùng chung một dòng lỗi dưới nhóm. Hai ô `select` chỉ
+  // sai được nếu bản nháp cũ mang giá trị lạ, nên trên thực tế đây gần như
+  // luôn là lỗi của ô tên.
+  const supervisorError =
+    errors.supervisorName ?? errors.supervisorHonorific ?? errors.supervisorTitle;
+
   return (
     // Bản thiết kế gom hết vào một lưới hai cột: ô nào ngắn thì đi cặp, ô nào
     // dài chiếm cả hàng. Thứ tự giữ nguyên thứ tự đọc của tờ đơn.
@@ -76,26 +82,57 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
         <span className="field-hint">Bộ môn phụ trách thiết bị, không thay đổi.</span>
       </div>
 
+      {/* Ba ô rời: cách xưng hô, học hàm học vị, tên. Nhãn chung nằm trên một
+          `span` chứ không phải `label`, vì một `label` chỉ trỏ được tới một ô;
+          nhóm được gộp bằng role="group" và mỗi ô mang nhãn riêng cho trình
+          đọc màn hình. Ba `id` trùng tên ba khóa lỗi để `focusFirstError`
+          trong FormScreen nhảy đúng ô. */}
       <div className="field span-2">
-        <label htmlFor="supervisor">
+        <span className="field-label" id="supervisor-label">
           Giảng viên hướng dẫn<span className="req">*</span>
-        </label>
-        <select
-          id="supervisor"
-          value={values.supervisor}
-          onChange={(e) => onChange({ supervisor: e.target.value })}
-          aria-invalid={errors.supervisor ? 'true' : undefined}
-          aria-describedby={errors.supervisor ? 'supervisor-error' : undefined}
-        >
-          {SUPERVISORS.map((s) => (
-            <option key={s.name} value={s.name}>
-              {supervisorFullLabel(s.name)}
-            </option>
-          ))}
-        </select>
-        {errors.supervisor && (
+        </span>
+        <div className="supervisor-parts" role="group" aria-labelledby="supervisor-label">
+          <select
+            id="supervisorHonorific"
+            aria-label="Cách xưng hô"
+            value={values.supervisorHonorific}
+            onChange={(e) => onChange({ supervisorHonorific: e.target.value })}
+            aria-invalid={errors.supervisorHonorific ? 'true' : undefined}
+          >
+            {SUPERVISOR_HONORIFICS.map((honorific) => (
+              <option key={honorific} value={honorific}>
+                {honorific}
+              </option>
+            ))}
+          </select>
+          <select
+            id="supervisorTitle"
+            aria-label="Học hàm, học vị"
+            value={values.supervisorTitle}
+            onChange={(e) => onChange({ supervisorTitle: e.target.value })}
+            aria-invalid={errors.supervisorTitle ? 'true' : undefined}
+          >
+            {SUPERVISOR_TITLES.map((title) => (
+              <option key={title} value={title}>
+                {title === '' ? '—' : title}
+              </option>
+            ))}
+          </select>
+          <input
+            id="supervisorName"
+            type="text"
+            aria-label="Tên giảng viên hướng dẫn"
+            value={values.supervisorName}
+            onChange={(e) => onChange({ supervisorName: e.target.value })}
+            aria-invalid={errors.supervisorName ? 'true' : undefined}
+            aria-describedby={supervisorError ? 'supervisor-error' : undefined}
+            autoComplete="off"
+            placeholder="Trần Văn Thành"
+          />
+        </div>
+        {supervisorError && (
           <span className="field-error" id="supervisor-error">
-            {errors.supervisor}
+            {supervisorError}
           </span>
         )}
       </div>

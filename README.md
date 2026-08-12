@@ -119,6 +119,11 @@ dữ liệu, vì sau thay đổi này **không trình duyệt nào đọc đư�
   cách *phát hiện*, không phải cách ngăn.
 - **Dấu vết mỏng đi.** Không còn `uid`, không còn email đã xác thực. Một lá
   đơn nay chỉ mang những gì ai đó gõ vào, cộng một dấu thời gian của máy chủ.
+- **Tên giảng viên hướng dẫn cũng chỉ là lời khai.** Ô này từng là danh sách
+  đóng gồm đúng một người; nay sinh viên tự gõ, vì mỗi khóa luận một người
+  hướng dẫn khác và sửa mã nguồn cho từng người là không kham nổi. Không gì
+  kiểm tra được cái tên đó — nhưng lá đơn là giấy, sinh viên tự mang đi xin
+  chữ ký, nên người hướng dẫn thấy tên mình sai là biết ngay.
 - **Token App Check phát lại được.** Một token lấy từ phiên trình duyệt thật
   dùng được tới khi hết hạn (~1 giờ). Chống phát lại chỉ có với backend riêng
   gọi `consumeAppCheckToken`, tức là cần một máy chủ mà ta không có.
@@ -169,6 +174,14 @@ submissions/{maHoSo}
   requestDate  string     YYYY-MM-DD
   samples      array      [{ name, state, solvent }]
 ```
+
+`supervisor` là **một chuỗi đã ghép** — "Thầy PGS. TS. Trần Văn Thành". Màn
+hình nhập chia nó thành ba ô (xưng hô, học hàm học vị, tên) nhưng đó là quyết
+định về giao diện: ba ô ấy ghép lại ngay trong `validateForm` và không có ô
+nào đi tiếp. Giữ nguyên như vậy là có chủ đích — `scripts/export-csv.ts` dựng
+lại từng đơn đã lưu bằng chính `formSchema`, nên nếu schema đòi ba ô rời thì
+mọi đơn đang nằm trong Firestore sẽ trượt kiểm tra và bị xuất ra thành dòng
+trống.
 
 **Khóa theo `maHoSo` làm cho việc ghi trở nên bất biến theo thiết kế.** Rules
 chỉ cho `create`, nên một mã hồ sơ không thể có tài liệu thứ hai — không cần
@@ -553,8 +566,10 @@ src/styles/index.css     Toàn bộ giao diện (hệ thiết kế "classical")
 
 ## Thay đổi thường gặp
 
-- **Thêm giảng viên hướng dẫn** — sửa `SUPERVISORS` trong
-  [src/lib/constants.ts](src/lib/constants.ts).
+- **Thêm cách xưng hô hoặc học hàm học vị cho giảng viên** — sửa
+  `SUPERVISOR_HONORIFICS` / `SUPERVISOR_TITLES` trong
+  [src/lib/constants.ts](src/lib/constants.ts). *Tên* giảng viên thì không cần
+  sửa gì: nó là ô gõ tự do.
 - **Đổi trạng thái mẫu cho phép** — sửa `SAMPLE_STATES` cùng file.
 - **Đổi tên bộ môn hoặc thiết bị** — sửa `DEPARTMENT` / `EQUIPMENT` cùng file.
 - **Đổi màu, cỡ chữ, khoảng cách của trang** — sửa các biến ở đầu

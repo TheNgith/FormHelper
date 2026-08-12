@@ -326,11 +326,37 @@ button {
   }
 }
 
-.field > label {
+/* `.field-label` là nhãn của một nhóm nhiều ô (ba ô giảng viên hướng dẫn):
+   trông y hệt `label` nhưng là `span`, vì một `label` chỉ trỏ được tới một ô. */
+.field > label,
+.field > .field-label {
   display: block;
   margin-bottom: 5px;
   font-size: 12px;
   color: var(--color-label);
+}
+
+/* Ba ô giảng viên: bản thiết kế xếp 90px / 130px / phần còn lại trên một
+   dòng. Chỗ đó chỉ đủ khi ô nhập đã co về 14px, nên dưới 640px hai ô chọn
+   chia đôi dòng trên và ô tên chiếm trọn dòng dưới. */
+.supervisor-parts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.supervisor-parts input {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 640px) {
+  .supervisor-parts {
+    grid-template-columns: 90px 130px 1fr;
+  }
+
+  .supervisor-parts input {
+    grid-column: auto;
+  }
 }
 
 .field .req {

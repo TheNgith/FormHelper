@@ -6,7 +6,7 @@ import { LIBERTINUS_FAMILY, PDF_FONT } from './fonts';
 
 const VALUES: FormValues = {
   department: 'Bộ môn Hóa Hữu Cơ',
-  supervisor: 'PGS.TS. Trần Văn Thành',
+  supervisor: 'Thầy PGS.TS. Trần Văn Thành',
   studentName: 'Nguyễn Thị Ngọc Ánh',
   studentId: '2200123',
   email: 'ngocanh@example.com',
@@ -97,6 +97,16 @@ describe('buildDocDefinition', () => {
     expect(text).toContain('Giảng viên hướng dẫn');
     expect(text).toContain('Người làm đơn');
     expect(text).not.toContain('Xác nhận của bộ môn');
+  });
+
+  it('bỏ cách xưng hô ở tên dưới dòng kẻ ký', () => {
+    const block = (doc.content as Array<Record<string, any>>).find(
+      (item) => item && item.unbreakable,
+    );
+    const lines = allText(block);
+    // Câu văn xưng "Thầy", chỗ ký thì không.
+    expect(lines).toContain('PGS.TS. Trần Văn Thành');
+    expect(lines).not.toContain('Thầy PGS.TS. Trần Văn Thành');
   });
 
   it('không tách khối chữ ký ra hai trang', () => {

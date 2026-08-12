@@ -19,7 +19,7 @@ pdfMake.setFonts(nodeFonts());
 
 const BASE: Omit<FormValues, 'samples'> = {
   department: 'Bộ môn Hóa Hữu Cơ',
-  supervisor: 'PGS.TS. Trần Văn Thành',
+  supervisor: 'Thầy PGS.TS. Trần Văn Thành',
   studentName: 'Nguyễn Thị Ngọc Ánh',
   studentId: '2200123',
   email: 'ngocanh@example.com',

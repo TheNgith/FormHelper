@@ -1,4 +1,3 @@
-import { supervisorFullLabel } from '../lib/constants';
 import type { FormValues } from '../lib/schema';
 import { formatShortDate } from '../lib/text';
 
@@ -22,7 +21,7 @@ export default function SummaryView({ values }: Props) {
         </div>
         <div>
           <dt>Giảng viên hướng dẫn</dt>
-          <dd>{supervisorFullLabel(values.supervisor)}</dd>
+          <dd>{values.supervisor}</dd>
         </div>
         <div>
           <dt>Ngày làm đơn</dt>

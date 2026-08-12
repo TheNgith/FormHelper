@@ -6,6 +6,10 @@ import type { FormDraft } from './schema';
 function draft(overrides: Partial<FormDraft> = {}): FormDraft {
   return {
     ...emptyForm(),
+    // `emptyForm()` để trống ô tên giảng viên — nó là ô gõ tự do, không còn
+    // là danh sách chọn có sẵn một giá trị.
+    supervisorTitle: 'PGS. TS.',
+    supervisorName: 'Trần Văn Thành',
     studentName: 'Nguyễn Thị Ngọc Ánh',
     studentId: '2200123',
     email: 'ngocanh@ump.edu.vn',
@@ -30,6 +34,34 @@ describe('validateForm', () => {
       name: 'Dapagliflozin',
       state: 'Rắn',
       solvent: 'Methanol',
+    });
+  });
+
+  describe('giảng viên hướng dẫn', () => {
+    it('ghép ba ô thành một chuỗi', () => {
+      const result = validateForm(draft());
+      if (!result.ok) throw new Error('mong đợi dữ liệu hợp lệ');
+      expect(result.values.supervisor).toBe('Thầy PGS. TS. Trần Văn Thành');
+    });
+
+    it('bỏ qua ô học vị để trống, không để lại hai dấu cách', () => {
+      const result = validateForm(draft({ supervisorTitle: '' }));
+      if (!result.ok) throw new Error('mong đợi dữ liệu hợp lệ');
+      expect(result.values.supervisor).toBe('Thầy Trần Văn Thành');
+    });
+
+    it('đòi tên giảng viên, và báo lỗi ở đúng ô tên', () => {
+      const result = validateForm(draft({ supervisorName: '   ' }));
+      if (result.ok) throw new Error('mong đợi dữ liệu không hợp lệ');
+      expect(result.errors.supervisorName).toBeDefined();
+      // Ô `supervisor` không tồn tại trên màn hình nên không được đếm là lỗi.
+      expect(result.errors.supervisor).toBeUndefined();
+    });
+
+    it('từ chối học vị ngoài danh sách', () => {
+      const result = validateForm(draft({ supervisorTitle: 'Thạc sỹ' }));
+      if (result.ok) throw new Error('mong đợi dữ liệu không hợp lệ');
+      expect(result.errors.supervisorTitle).toBeDefined();
     });
   });
 

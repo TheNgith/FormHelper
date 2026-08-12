@@ -22,7 +22,7 @@ const MA_HO_SO = 'IR-20260812-A7K3M9';
 
 const VALUES: FormValues = {
   department: 'Bộ môn Hóa Hữu Cơ',
-  supervisor: 'PGS.TS. Trần Văn Thành',
+  supervisor: 'Thầy PGS.TS. Trần Văn Thành',
   studentName: 'Nguyễn Thị Ngọc Ánh',
   studentId: '2200123',
   email: 'ngocanh@ump.edu.vn',
