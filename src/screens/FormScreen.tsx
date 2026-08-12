@@ -64,7 +64,7 @@ export default function FormScreen({
   return (
     <form onSubmit={handleSubmit} noValidate>
       {showSummaryError && errorCount > 0 && (
-        <div className="banner banner-error" role="alert">
+        <div className="notice notice-danger" role="alert">
           <span>
             <strong>Chưa gửi được đơn</strong>
             Còn {errorCount} ô chưa hợp lệ. Các ô này được đánh dấu đỏ bên dưới.
@@ -72,38 +72,51 @@ export default function FormScreen({
         </div>
       )}
 
-      <section className="card">
-        <h2>Thông tin người làm đơn</h2>
-        <p className="card-hint">
-          Các thông tin này được in nguyên văn lên đơn, hãy kiểm tra kỹ chính tả.
-        </p>
-        <ApplicantFields values={values} errors={errors} onChange={patchField} />
+      <section className="section">
+        <div className="section-head">
+          <h2>Người làm đơn</h2>
+          <p className="section-note">
+            Được in nguyên văn lên đơn — kiểm tra kỹ chính tả.
+          </p>
+        </div>
+        <div className="section-body">
+          <ApplicantFields values={values} errors={errors} onChange={patchField} />
 
-        {/* Không còn đăng nhập nên thông tin đã lưu — nay có cả địa chỉ email
-            — sống qua nhiều phiên trình duyệt trên cùng một máy. Nút dọn vì
-            vậy là một nút thật, đặt ngay dưới các ô nó điền vào, chứ không
-            phải một dòng chữ nhỏ ở chân trang. Máy trong phòng thí nghiệm
-            dùng chung. */}
-        {hasSavedProfile && (
-          <div className="profile-note">
-            <p>
-              Thông tin trên, kể cả email, được điền sẵn từ lần nộp trước và
-              lưu ngay trên máy này.
-            </p>
-            <button type="button" className="btn btn-secondary" onClick={onForgetProfile}>
-              Quên thông tin đã lưu
-            </button>
-          </div>
-        )}
+          {/* Không còn đăng nhập nên thông tin đã lưu — nay có cả địa chỉ email
+              — sống qua nhiều phiên trình duyệt trên cùng một máy. Nút dọn vì
+              vậy là một nút thật, đặt ngay dưới các ô nó điền vào, chứ không
+              phải một dòng chữ nhỏ ở chân trang. Máy trong phòng thí nghiệm
+              dùng chung. */}
+          {hasSavedProfile && (
+            <div className="profile-note">
+              <p>
+                Thông tin trên, kể cả email, được điền sẵn từ lần nộp trước và
+                lưu ngay trên máy này.
+              </p>
+              <button type="button" className="btn btn-secondary" onClick={onForgetProfile}>
+                Quên thông tin đã lưu
+              </button>
+            </div>
+          )}
+        </div>
       </section>
 
-      <section className="card">
-        <h2>Các mẫu đo</h2>
-        <p className="card-hint">
-          Liệt kê những mẫu cần đo trên {EQUIPMENT}. Số thứ tự được đánh tự động
-          theo đúng thứ tự bên dưới.
-        </p>
-        <SampleList samples={values.samples} errors={errors} onChange={patchSamples} />
+      <hr className="hr" />
+
+      <section className="section">
+        <div className="section-head">
+          <h2>Các mẫu đo</h2>
+          <p className="section-count" aria-live="polite">
+            {values.samples.length} mẫu
+          </p>
+          <p className="section-note">
+            Những mẫu cần đo trên {EQUIPMENT}. Số thứ tự được đánh tự động theo
+            đúng thứ tự bên dưới.
+          </p>
+        </div>
+        <div className="section-body">
+          <SampleList samples={values.samples} errors={errors} onChange={patchSamples} />
+        </div>
       </section>
 
       {/* Ô bẫy bot từng nằm ở đây. Nó tồn tại vì hồi đó bất kỳ ai cũng POST
@@ -111,7 +124,7 @@ export default function FormScreen({
           kèm một token chứng thực rằng yêu cầu đến từ trang này, và một cái
           bẫy trong HTML thì không thêm được gì vào đó. */}
 
-      <div className="actions actions-end">
+      <div className="actions">
         <button type="button" className="btn btn-secondary" onClick={onReset}>
           Xóa hết
         </button>

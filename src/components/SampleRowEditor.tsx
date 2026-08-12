@@ -36,11 +36,13 @@ export default function SampleRowEditor({
   return (
     <li className="sample-row">
       <div className="sample-row-head">
-        <span className="sample-row-index" aria-hidden="true">
-          {index + 1}
+        {/* Bản thiết kế bỏ chữ "Mẫu N", chỉ còn con số hai chữ số màu đồng.
+            Chữ vẫn còn nguyên cho trình đọc màn hình. */}
+        <span className="sample-index" aria-hidden="true">
+          {String(index + 1).padStart(2, '0')}
         </span>
-        <span className="sample-row-title">Mẫu {index + 1}</span>
-        <div className="sample-row-tools">
+        <span className="sr-only">Mẫu {index + 1}</span>
+        <div className="sample-tools">
           <button
             type="button"
             className="btn btn-ghost"
@@ -83,28 +85,28 @@ export default function SampleRowEditor({
         </div>
       </div>
 
-      <div className="field">
-        <label htmlFor={nameId}>
-          Tên mẫu<span className="req">*</span>
-        </label>
-        <input
-          id={nameId}
-          type="text"
-          value={value.name}
-          onChange={(e) => onChange({ name: e.target.value })}
-          aria-invalid={nameError ? 'true' : undefined}
-          aria-describedby={nameError ? `${nameId}-error` : undefined}
-          autoComplete="off"
-          placeholder="Ví dụ: HHVL DAP - HPMC"
-        />
-        {nameError && (
-          <span className="field-error" id={`${nameId}-error`}>
-            {nameError}
-          </span>
-        )}
-      </div>
-
       <div className="field-grid">
+        <div className="field span-2">
+          <label htmlFor={nameId}>
+            Tên mẫu<span className="req">*</span>
+          </label>
+          <input
+            id={nameId}
+            type="text"
+            value={value.name}
+            onChange={(e) => onChange({ name: e.target.value })}
+            aria-invalid={nameError ? 'true' : undefined}
+            aria-describedby={nameError ? `${nameId}-error` : undefined}
+            autoComplete="off"
+            placeholder="Ví dụ: HHVL DAP - HPMC"
+          />
+          {nameError && (
+            <span className="field-error" id={`${nameId}-error`}>
+              {nameError}
+            </span>
+          )}
+        </div>
+
         <div className="field">
           <label htmlFor={stateId}>
             Trạng thái mẫu<span className="req">*</span>

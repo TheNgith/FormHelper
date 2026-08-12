@@ -416,6 +416,36 @@ duyệt nhảy khỏi tên miền giữa chừng.
 Ràng buộc "phải ở Firebase Hosting" của bản cũ — luồng OAuth qua
 `<project>.firebaseapp.com/__/auth/handler` — đã đi cùng với đăng nhập.
 
+## Giao diện
+
+Toàn bộ giao diện dựng theo hệ thiết kế **classical** (bản `IR Form
+(refined)` trên claude.ai/design): giấy màu ngà, chữ có chân — Cormorant
+Garamond cho tiêu đề, Lora cho phần chữ chạy — điểm nhấn màu đồng, nút viền
+rỗng thay vì nút đặc màu. Ba màn hình nằm trong cùng một khung giấy; tiêu đề
+mục xếp ở cột trái rộng 210px, nội dung bên phải; vạch tiến độ ba nét và cặp
+số "01 / 03" nằm ở góc phải thanh tiêu đề, riêng màn hình cuối thì chỗ đó là
+mã hồ sơ.
+
+Tất cả nằm trong [src/styles/index.css](src/styles/index.css) — một file,
+không thư viện CSS, không bước dựng riêng.
+
+Bốn chỗ cố ý lệch khỏi bản vẽ, đều có lý do:
+
+| Chỗ lệch | Vì sao |
+| --- | --- |
+| Ô nhập 16px, nút cao 44px trên màn hình hẹp (bản vẽ để 14px / 36px) | Dưới 16px thì iOS tự phóng to cả trang lúc gõ. 44px là bề ngang đầu ngón tay. |
+| Lưới hai cột gập lại thành một cột dưới 820px | Bản vẽ chỉ có khung 1040px. Phần lớn sinh viên mở bằng điện thoại. |
+| Chữ trên nút và dấu `*` dùng đồng sẫm `#7d5411`, không phải đồng `#b68235` | Màu đồng chỉ đạt 3:1 trên nền giấy — đủ cho nét vẽ, không đủ cho chữ. Viền, vạch, số thứ tự vẫn giữ màu đồng, nên nhìn vẫn là một màu. |
+| Số đếm dùng `lining-nums` thay cho `tnum` đơn thuần | Cormorant Garamond mặc định vẽ số kiểu cổ, "01 / 03" đọc ra thành "oi / o3". |
+
+Hệ thiết kế gốc không có màu báo lỗi — nó chỉ có màu đồng và màu trung tính.
+Ba màu đỏ gạch trong `--color-danger*` là phần thêm, chọn theo cùng gam ấm.
+
+Hai phông tải từ Google Fonts (khai trong [index.html](index.html)) và **không
+liên quan gì tới file PDF**: PDF nhúng Libertinus thẳng vào tệp. Mạng chặn
+Google Fonts thì trang chỉ đổi dáng chữ sang phông dự phòng, đơn in ra vẫn y
+nguyên.
+
 ## Phông chữ
 
 Đơn được đặt bằng **Libertinus**, phát hành theo giấy phép SIL Open Font
@@ -518,6 +548,7 @@ src/lib/pdf/             Bố cục PDF và nạp phông
 src/lib/storage.ts       Bản nháp và thông tin cá nhân (localStorage)
 src/lib/session.ts       Đơn vừa gửi (sessionStorage)
 src/screens/             Ba màn hình của sinh viên
+src/styles/index.css     Toàn bộ giao diện (hệ thiết kế "classical")
 ```
 
 ## Thay đổi thường gặp
@@ -526,6 +557,8 @@ src/screens/             Ba màn hình của sinh viên
   [src/lib/constants.ts](src/lib/constants.ts).
 - **Đổi trạng thái mẫu cho phép** — sửa `SAMPLE_STATES` cùng file.
 - **Đổi tên bộ môn hoặc thiết bị** — sửa `DEPARTMENT` / `EQUIPMENT` cùng file.
+- **Đổi màu, cỡ chữ, khoảng cách của trang** — sửa các biến ở đầu
+  [src/styles/index.css](src/styles/index.css); đừng rải giá trị cứng ra dưới.
 - **Đổi tiêu đề cơ quan ở đầu đơn** — sửa `LETTERHEAD` / `SCHOOL` cùng file.
 - **Đổi phông** — sửa `FACES` trong
   [scripts/build-fonts.sh](scripts/build-fonts.sh) và `LIBERTINUS_FAMILY`

@@ -28,16 +28,14 @@ export default function ReviewScreen({
 
   return (
     <>
-      <div className="banner banner-warning">
+      <div className="notice notice-accent">
         <span>
-          <strong>Kiểm tra lại trước khi gửi</strong>
-          Đơn chưa được gửi đi. Hãy đối chiếu từng dòng bên dưới, sau đó bấm
-          “Xác nhận và gửi”.
+          Đơn chưa được gửi. Xác nhận lại thông tin rồi bấm “Xác nhận và gửi”.
         </span>
       </div>
 
       {error && (
-        <div className="banner banner-error" role="alert">
+        <div className="notice notice-danger" role="alert">
           <span>
             <strong>Gửi không thành công</strong>
             {error}
@@ -45,12 +43,16 @@ export default function ReviewScreen({
         </div>
       )}
 
-      <section className="card">
-        <h2>Nội dung đơn</h2>
-        <SummaryView values={values} />
+      <section className="section">
+        <div className="section-head">
+          <h2>Nội dung đơn</h2>
+        </div>
+        <div className="section-body">
+          <SummaryView values={values} />
+        </div>
       </section>
 
-      <div className="actions actions-end">
+      <div className="actions">
         <button
           type="button"
           className="btn btn-secondary"
@@ -73,7 +75,7 @@ export default function ReviewScreen({
       {/* Chỉ có khi chạy `npm run dev`: xem thử bố cục PDF mà không phải gửi
           đơn. Vite loại bỏ hẳn khối này khi build bản phát hành. */}
       {import.meta.env.DEV && (
-        <div className="actions actions-end">
+        <div className="actions">
           <button
             type="button"
             className="btn btn-ghost"

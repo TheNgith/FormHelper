@@ -60,8 +60,8 @@ export default function SummaryView({ values }: Props) {
         Các mẫu đo ({values.samples.length})
       </h3>
 
-      <div className="summary-table-wrap">
-        <table className="summary-table">
+      <div className="table-wrap">
+        <table className="table">
           <thead>
             <tr>
               <th scope="col" className="col-stt">

@@ -3,12 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="light" />
     <meta
       name="description"
       content="Tạo đơn xin sử dụng máy quang phổ hồng ngoại (FT-IR) tại Bộ môn Hóa Hữu Cơ."
     />
     <title>Đơn xin sử dụng thiết bị</title>
+
+    <!--
+      Hai phông của giao diện: Cormorant Garamond cho tiêu đề, Lora cho phần
+      chữ chạy. Cả hai đều có bộ chữ tiếng Việt riêng trên Google Fonts, và
+      `display=swap` để trang hiện chữ ngay bằng phông dự phòng nếu mạng chậm
+      thay vì để trống.
+
+      Đây **không phải** phông của file PDF. File PDF dùng Libertinus nhúng
+      thẳng vào tệp (public/fonts/), không liên quan gì tới hai phông ở đây —
+      mạng có chặn Google Fonts thì trang chỉ đổi dáng chữ, đơn in ra vẫn y
+      nguyên.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Lora:wght@400;600&display=swap"
+    />
   </head>
   <body>
     <div id="root"></div>

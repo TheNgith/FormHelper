@@ -67,14 +67,16 @@ function TextField({
 
 export default function ApplicantFields({ values, errors, onChange }: Props) {
   return (
-    <>
-      <div className="field">
+    // Bản thiết kế gom hết vào một lưới hai cột: ô nào ngắn thì đi cặp, ô nào
+    // dài chiếm cả hàng. Thứ tự giữ nguyên thứ tự đọc của tờ đơn.
+    <div className="field-grid">
+      <div className="field span-2">
         <label htmlFor="department">Kính gửi</label>
         <input id="department" type="text" value={values.department} disabled />
         <span className="field-hint">Bộ môn phụ trách thiết bị, không thay đổi.</span>
       </div>
 
-      <div className="field">
+      <div className="field span-2">
         <label htmlFor="supervisor">
           Giảng viên hướng dẫn<span className="req">*</span>
         </label>
@@ -98,91 +100,87 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
         )}
       </div>
 
-      <div className="field-grid">
-        <TextField
-          id="studentName"
-          label="Em tên là"
-          className="span-2"
-          value={values.studentName}
-          error={errors.studentName}
-          autoComplete="name"
-          placeholder="Nguyễn Thị Ngọc Ánh"
-          onChange={(v) => onChange({ studentName: v })}
-        />
-        <TextField
-          id="studentId"
-          label="Mã số sinh viên"
-          value={values.studentId}
-          error={errors.studentId}
-          inputMode="numeric"
-          autoComplete="off"
-          placeholder="2200123"
-          onChange={(v) => onChange({ studentId: v })}
-        />
-        <TextField
-          id="phone"
-          label="Số điện thoại"
-          value={values.phone}
-          error={errors.phone}
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          placeholder="0912345678"
-          onChange={(v) => onChange({ phone: v })}
-        />
-        {/* Ô này từng bị khóa vì giá trị đến từ token đăng nhập. Không còn
-            đăng nhập nên sinh viên tự gõ, và không gì chứng minh địa chỉ là
-            của họ. Câu nhắc @ump.edu.vn ở đây là lời khuyên đọc được và sửa
-            được — cố ý không đưa nó vào firestore.rules, nơi nó sẽ chặn thẳng
-            một lá đơn thật bằng một câu lỗi khó hiểu. */}
-        <TextField
-          id="email"
-          label="Mail"
-          className="span-2"
-          value={values.email}
-          error={errors.email}
-          hint="Dùng địa chỉ trường cấp (@ump.edu.vn) để bộ môn liên hệ lại được."
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          placeholder="ngocanh@ump.edu.vn"
-          onChange={(v) => onChange({ email: v })}
-        />
-        <TextField
-          id="className"
-          label="Lớp"
-          value={values.className}
-          error={errors.className}
-          autoComplete="off"
-          placeholder="D2A"
-          onChange={(v) => onChange({ className: v })}
-        />
-        <TextField
-          id="cohort"
-          label="Niên khóa"
-          value={values.cohort}
-          error={errors.cohort}
-          hint="Dạng 2022 - 2026"
-          autoComplete="off"
-          placeholder="2022 - 2026"
-          onChange={(v) => onChange({ cohort: v })}
-        />
-      </div>
+      <TextField
+        id="studentName"
+        label="Em tên là"
+        className="span-2"
+        value={values.studentName}
+        error={errors.studentName}
+        autoComplete="name"
+        placeholder="Nguyễn Thị Ngọc Ánh"
+        onChange={(v) => onChange({ studentName: v })}
+      />
+      <TextField
+        id="studentId"
+        label="Mã số sinh viên"
+        value={values.studentId}
+        error={errors.studentId}
+        inputMode="numeric"
+        autoComplete="off"
+        placeholder="2200123"
+        onChange={(v) => onChange({ studentId: v })}
+      />
+      <TextField
+        id="phone"
+        label="Số điện thoại"
+        value={values.phone}
+        error={errors.phone}
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        placeholder="0912345678"
+        onChange={(v) => onChange({ phone: v })}
+      />
+      {/* Ô này từng bị khóa vì giá trị đến từ token đăng nhập. Không còn
+          đăng nhập nên sinh viên tự gõ, và không gì chứng minh địa chỉ là
+          của họ. Câu nhắc @ump.edu.vn ở đây là lời khuyên đọc được và sửa
+          được — cố ý không đưa nó vào firestore.rules, nơi nó sẽ chặn thẳng
+          một lá đơn thật bằng một câu lỗi khó hiểu. */}
+      <TextField
+        id="email"
+        label="Mail"
+        className="span-2"
+        value={values.email}
+        error={errors.email}
+        hint="Dùng địa chỉ trường cấp (@ump.edu.vn) để bộ môn liên hệ lại được."
+        type="email"
+        inputMode="email"
+        autoComplete="email"
+        placeholder="ngocanh@ump.edu.vn"
+        onChange={(v) => onChange({ email: v })}
+      />
+      <TextField
+        id="className"
+        label="Lớp"
+        value={values.className}
+        error={errors.className}
+        autoComplete="off"
+        placeholder="D2A"
+        onChange={(v) => onChange({ className: v })}
+      />
+      <TextField
+        id="cohort"
+        label="Niên khóa"
+        value={values.cohort}
+        error={errors.cohort}
+        hint="Dạng 2022 - 2026"
+        autoComplete="off"
+        placeholder="2022 - 2026"
+        onChange={(v) => onChange({ cohort: v })}
+      />
 
-      <div className="field-grid">
-        <div className="field">
-          <label htmlFor="city">Nơi làm đơn</label>
-          <input id="city" type="text" value={values.city} disabled />
-        </div>
-        <TextField
-          id="date"
-          label="Ngày làm đơn"
-          value={values.date}
-          error={errors.date}
-          type="date"
-          onChange={(v) => onChange({ date: v })}
-        />
+      <div className="field">
+        <label htmlFor="city">Nơi làm đơn</label>
+        <input id="city" type="text" value={values.city} disabled />
       </div>
-    </>
+      <TextField
+        id="date"
+        label="Ngày làm đơn"
+        value={values.date}
+        error={errors.date}
+        type="date"
+        onChange={(v) => onChange({ date: v })}
+      />
+    </div>
   );
 }

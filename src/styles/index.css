@@ -1,238 +1,319 @@
-/* Base styles. Mobile-first: most students open this on a phone, so the
-   default layout is the narrow one and the wider rules are additive. */
+/* Giao diện dựng theo hệ thiết kế "classical" (bản `IR Form (refined)`):
+   giấy màu ngà, chữ có chân, điểm nhấn màu đồng, nút viền rỗng thay vì nút
+   đặc màu.
+
+   Bản thiết kế vẽ trên khung rộng 1040px. Trang này thì phần lớn sinh viên mở
+   bằng điện thoại, nên mọi thứ ở đây viết theo lối hẹp trước — các quy tắc
+   `min-width` bên dưới mới dựng lại đúng bố cục của bản thiết kế. Hai chỗ cố ý
+   lệch khỏi bản vẽ, đều vì màn hình cảm ứng: ô nhập 16px (dưới ngưỡng đó iOS
+   tự phóng to cả trang lúc gõ) và nút cao 44px cho vừa đầu ngón tay.
+
+   Màu trong bản thiết kế viết bằng `color-mix()`; ở đây quy sẵn ra rgb() vì
+   mọi phép trộn đều là một màu nền pha với trong suốt, kết quả không đổi mà
+   không phụ thuộc trình duyệt đời mới. */
 
 :root {
-  --bg: #f4f5f7;
-  --surface: #ffffff;
-  --surface-alt: #f8f9fb;
-  --border: #d6d9e0;
-  --border-strong: #b4b9c4;
-  --text: #1c1f26;
-  --text-muted: #5c6474;
-  --accent: #1f5fa8;
-  --accent-hover: #17497f;
-  --accent-soft: #e8f0fa;
-  --danger: #b3261e;
-  --danger-soft: #fdecea;
-  --warning: #8a5a00;
-  --warning-soft: #fdf3e0;
-  --success: #1c6b3f;
-  --success-soft: #e7f4ec;
-  --radius: 8px;
-  --radius-sm: 5px;
-  --shadow: 0 1px 3px rgb(20 24 35 / 8%), 0 6px 20px rgb(20 24 35 / 5%);
+  /* ---------- Màu ---------- */
+  --color-page: #e6e4e4; /* nền ngoài tờ đơn */
+  --color-bg: #f3f2f2; /* mặt giấy */
+  --color-surface: #eae9e9;
+  --color-text: #201f1d;
+  --color-accent: #b68235;
+
+  --color-divider: rgb(32 31 29 / 16%);
+  --color-line-strong: rgb(32 31 29 / 45%);
+  --color-label: rgb(32 31 29 / 70%);
+  /* Bản thiết kế để 55%; đậm lên 65% để chữ 11px vẫn đạt tỉ lệ tương phản
+     4,5:1 trên nền giấy. Xem ghi chú màu chữ ở --color-accent-700. */
+  --color-muted: rgb(32 31 29 / 65%);
+  --color-faint: rgb(32 31 29 / 7%);
+  --color-faintest: rgb(32 31 29 / 4%);
+
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+
+  --color-accent-100: #fff3e4;
+  --color-accent-300: #facb8d;
+  /* Màu đồng #b68235 chỉ đạt 3:1 trên nền giấy — đủ cho nét vẽ, không đủ cho
+     chữ. Nên trong bản dựng này có một quy tắc: **đồng cho hình, đồng sẫm cho
+     chữ**. Viền nút, vạch tiến độ, con số thứ tự mẫu, vạch đầu băng thông báo
+     giữ nguyên --color-accent; còn chữ trên nút và dấu * bắt buộc thì dùng
+     --color-accent-700 (6:1). Nhìn vẫn là một màu, đọc thì rõ hơn hẳn. */
+  --color-accent-700: #7d5411;
+  --color-accent-800: #5a3b0a;
+  --color-accent-tint: rgb(182 130 53 / 12%);
+  --color-accent-tint-strong: rgb(182 130 53 / 22%);
+
+  /* Hệ thiết kế chỉ có màu đồng và màu trung tính — không có màu báo lỗi.
+     Ba màu dưới đây là phần thêm, chọn theo cùng gam ấm để ô sai không nhảy
+     ra khỏi bảng màu chung. */
+  --color-danger: #8f2f22;
+  --color-danger-soft: #fbeae6;
+  --color-danger-line: #dfb4aa;
+
+  /* Băng "đã gửi đơn" lấy đúng màu lục trong bản thiết kế. */
+  --color-success: #4b6933;
+
+  /* ---------- Chữ ---------- */
+  --font-heading: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-heading-weight: 600;
+  --font-body: 'Lora', Georgia, 'Times New Roman', serif;
+
+  /* ---------- Khoảng cách ---------- */
+  --space-1: 4.6px;
+  --space-2: 9.2px;
+  --space-3: 13.8px;
+  --space-4: 18.4px;
+  --space-6: 27.6px;
+  --space-8: 36.8px;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 7px;
+
+  --shadow-sm: 0 1px 2px rgb(45 43 43 / 14%);
+
+  /* Cỡ chữ và chiều cao của ô nhập, nút bấm. Giá trị mặc định là của điện
+     thoại; bản thiết kế (14px / 36px) chỉ áp dụng từ màn hình rộng trở lên. */
+  --control-font: 16px;
+  --control-min-height: 44px;
 
   color-scheme: light;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  color: var(--text);
-  background: var(--bg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--color-text);
+  background: var(--color-page);
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
+@media (min-width: 640px) {
+  :root {
+    --control-font: 14px;
+    --control-min-height: 36px;
+  }
+}
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
   min-height: 100dvh;
-  background: var(--bg);
+  background: var(--color-page);
 }
 
 h1,
 h2,
-h3 {
+h3,
+h4,
+h5,
+h6 {
   margin: 0;
-  line-height: 1.25;
-  font-weight: 600;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
 }
 
 p {
   margin: 0;
 }
 
-/* iOS zooms the whole page when a focused input is under 16px, which throws
-   the layout off mid-typing. Keep every control at 16px on small screens. */
 input,
 select,
 textarea,
 button {
-  font: inherit;
-  font-size: 16px;
+  font-family: inherit;
   color: inherit;
 }
 
+:focus {
+  outline: none;
+}
+
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-.app {
-  max-width: 780px;
-  margin: 0 auto;
-  padding: 16px 14px 64px;
+::selection {
+  background: rgb(182 130 53 / 30%);
 }
 
-@media (min-width: 640px) {
-  .app {
-    padding: 32px 24px 80px;
-  }
-}
-
-/* ---------- Masthead ---------- */
-
-.masthead {
-  margin-bottom: 20px;
-}
-
-.masthead h1 {
-  font-size: 1.35rem;
-}
-
-.masthead p {
-  margin-top: 6px;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-
-/* ---------- Step indicator ---------- */
-
-.steps {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 20px;
+/* Nhãn chỉ dành cho trình đọc màn hình. Bản thiết kế thay chữ bằng hình —
+   vạch tiến độ, con số "01" của mỗi mẫu — nên phần chữ chuyển về đây. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
   padding: 0;
-  list-style: none;
-  font-size: 0.78rem;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
-.steps li {
-  flex: 1;
-  padding: 7px 4px 0;
-  border-top: 3px solid var(--border);
-  color: var(--text-muted);
-  text-align: center;
-}
+/* ---------- Tờ đơn ---------- */
 
-.steps li[data-state="current"] {
-  border-top-color: var(--accent);
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.steps li[data-state="done"] {
-  border-top-color: var(--accent);
-  color: var(--text);
-}
-
-/* ---------- Cards / sections ---------- */
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 18px 16px;
-  margin-bottom: 16px;
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-3) var(--space-3) 96px;
 }
 
 @media (min-width: 640px) {
-  .card {
-    padding: 22px 24px;
+  .page {
+    padding: var(--space-8) var(--space-6) 96px;
   }
 }
 
-.card > h2 {
-  font-size: 1.02rem;
-  margin-bottom: 4px;
-}
-
-.card > .card-hint {
-  color: var(--text-muted);
-  font-size: 0.86rem;
-  margin-bottom: 16px;
-}
-
-/* ---------- Form fields ---------- */
-
-.field {
-  margin-bottom: 16px;
-}
-
-.field:last-child {
-  margin-bottom: 0;
-}
-
-.field label {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 0.88rem;
-  font-weight: 500;
-}
-
-.field .req {
-  color: var(--danger);
-  margin-left: 2px;
-}
-
-.field input,
-.field select,
-.field textarea {
+.sheet {
   width: 100%;
-  padding: 9px 11px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  max-width: 1040px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
 
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
-  border-color: var(--accent);
-  outline: none;
-  box-shadow: 0 0 0 3px var(--accent-soft);
+.sheet-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
 }
 
-.field input[aria-invalid="true"],
-.field select[aria-invalid="true"] {
-  border-color: var(--danger);
+@media (min-width: 640px) {
+  .sheet-head {
+    padding: var(--space-3) var(--space-6);
+  }
 }
 
-.field input[aria-invalid="true"]:focus,
-.field select[aria-invalid="true"]:focus {
-  box-shadow: 0 0 0 3px var(--danger-soft);
+.sheet-head h1 {
+  margin-right: auto;
+  font-size: 21px;
 }
 
-.field input:disabled,
-.field select:disabled {
-  background: var(--surface-alt);
-  color: var(--text-muted);
-  cursor: not-allowed;
+@media (min-width: 640px) {
+  .sheet-head h1 {
+    font-size: 24px;
+  }
 }
 
-.field-error {
+.sheet-meta {
+  font-size: 12px;
+  color: var(--color-neutral-700);
+  font-feature-settings: 'tnum';
+  overflow-wrap: anywhere;
+}
+
+.sheet-body {
+  padding: var(--space-4) var(--space-4) var(--space-6);
+}
+
+@media (min-width: 640px) {
+  .sheet-body {
+    padding: var(--space-6) var(--space-6) var(--space-8);
+  }
+}
+
+/* ---------- Vạch tiến độ ---------- */
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.progress-ticks {
+  display: flex;
+  gap: 4px;
+}
+
+.progress-ticks span {
   display: block;
-  margin-top: 5px;
-  color: var(--danger);
-  font-size: 0.82rem;
+  width: 22px;
+  height: 2px;
+  background: var(--color-divider);
 }
 
-.field-hint {
-  display: block;
-  margin-top: 5px;
-  color: var(--text-muted);
-  font-size: 0.82rem;
+.progress-ticks span[data-done='true'] {
+  background: var(--color-accent);
 }
+
+.progress-label {
+  font-family: var(--font-heading);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-size: 13px;
+  color: var(--color-accent-700);
+}
+
+/* ---------- Mục ---------- */
+
+/* Bản thiết kế xếp tiêu đề mục vào một cột 210px bên trái, nội dung bên phải.
+   Màn hình hẹp không đủ chỗ cho hai cột nên tiêu đề nằm trên, nội dung nằm
+   dưới. */
+.section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+@media (min-width: 820px) {
+  .section {
+    grid-template-columns: 210px 1fr;
+    gap: var(--space-6);
+  }
+}
+
+.section-head h2 {
+  font-size: 22px;
+}
+
+@media (min-width: 640px) {
+  .section-head h2 {
+    font-size: 25px;
+  }
+}
+
+.section-count {
+  margin-top: var(--space-1);
+  font-size: 12px;
+  color: var(--color-neutral-700);
+  font-feature-settings: 'tnum';
+}
+
+.section-note {
+  margin-top: var(--space-2);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.hr {
+  height: 1px;
+  border: 0;
+  margin: var(--space-6) 0;
+  background: var(--color-divider);
+}
+
+/* ---------- Ô nhập ---------- */
 
 .field-grid {
   display: grid;
-  gap: 0 16px;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
 }
 
 @media (min-width: 560px) {
@@ -245,68 +326,145 @@ button {
   }
 }
 
-/* ---------- Buttons ---------- */
+.field > label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  color: var(--color-label);
+}
+
+.field .req {
+  margin-left: 2px;
+  color: var(--color-accent-700);
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  min-height: var(--control-min-height);
+  padding: 6px 10px;
+  font-size: var(--control-font);
+  color: var(--color-text);
+  caret-color: var(--color-accent);
+  background: transparent;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  transition: border-color 120ms ease;
+}
+
+.field input:hover,
+.field select:hover {
+  border-color: var(--color-line-strong);
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  border-color: var(--color-accent);
+  outline-offset: 0;
+}
+
+.field input[aria-invalid='true'],
+.field select[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.field input[aria-invalid='true']:focus-visible,
+.field select[aria-invalid='true']:focus-visible {
+  border-color: var(--color-danger);
+  outline-color: var(--color-danger);
+}
+
+/* Hai ô "Kính gửi" và "Nơi làm đơn" do bộ môn định sẵn: vẫn là ô nhập cho
+   thẳng hàng với các ô còn lại, nhưng tô nền để thấy rõ là không sửa được. */
+.field input:disabled,
+.field select:disabled {
+  background: var(--color-surface);
+  color: var(--color-muted);
+  cursor: not-allowed;
+}
+
+.field-error,
+.field-hint {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.field-error {
+  color: var(--color-danger);
+}
+
+.field-hint {
+  color: var(--color-neutral-700);
+}
+
+/* ---------- Nút ---------- */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  min-height: 44px; /* comfortable tap target */
-  padding: 10px 18px;
+  gap: 6px;
+  min-height: var(--control-min-height);
+  padding: var(--space-2) calc(var(--space-3) * 1.2);
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: var(--control-font);
+  line-height: 1.2;
+  color: var(--color-text);
+  background: transparent;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  font-weight: 500;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease;
 }
 
 .btn:disabled {
-  opacity: 0.55;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
 .btn-primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  color: var(--color-accent-700);
+  border-color: var(--color-accent);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
+  background: var(--color-accent-tint);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--color-accent-tint-strong);
 }
 
 .btn-secondary {
-  border-color: var(--border-strong);
-  color: var(--text);
+  border-color: var(--color-divider);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: var(--surface-alt);
+  background: var(--color-faint);
 }
 
 .btn-ghost {
-  min-height: 36px;
-  padding: 6px 10px;
-  border-color: transparent;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 0.85rem;
+  min-height: 0;
+  padding: var(--space-1) var(--space-2);
+  font-size: 12px;
+  color: var(--color-accent-700);
 }
 
 .btn-ghost:hover:not(:disabled) {
-  background: var(--surface-alt);
-  color: var(--text);
+  background: rgb(182 130 53 / 10%);
 }
 
 .btn-danger-ghost {
-  color: var(--danger);
+  color: var(--color-danger);
 }
 
 .btn-danger-ghost:hover:not(:disabled) {
-  background: var(--danger-soft);
+  background: var(--color-danger-soft);
 }
 
 .btn-block {
@@ -316,61 +474,85 @@ button {
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.actions-end {
   justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-8);
 }
 
+/* Trên điện thoại hai nút xếp chồng và trải hết bề ngang; thứ tự đảo lại để
+   nút đi tiếp nằm trên, ngay dưới nội dung vừa đọc. */
 @media (max-width: 559px) {
+  .actions {
+    flex-direction: column-reverse;
+  }
+
   .actions .btn {
-    flex: 1 1 100%;
+    width: 100%;
   }
 }
 
-/* ---------- Banners ---------- */
+/* ---------- Băng thông báo ---------- */
 
-.banner {
+.notice {
   display: flex;
-  gap: 10px;
-  padding: 12px 14px;
+  align-items: stretch;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-6);
   border: 1px solid;
-  border-radius: var(--radius-sm);
-  margin-bottom: 16px;
-  font-size: 0.88rem;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-.banner-error {
-  background: var(--danger-soft);
-  border-color: #f0c2be;
-  color: var(--danger);
+.notice:last-child {
+  margin-bottom: 0;
 }
 
-.banner-warning {
-  background: var(--warning-soft);
-  border-color: #e8cd94;
-  color: var(--warning);
+.notice::before {
+  content: '';
+  flex: none;
+  width: 3px;
+  min-height: 16px;
+  background: currentcolor;
 }
 
-.banner-success {
-  background: var(--success-soft);
-  border-color: #b6dcc4;
-  color: var(--success);
-}
-
-.banner strong {
+.notice strong {
   display: block;
-  margin-bottom: 2px;
 }
 
-/* ---------- Spinner ---------- */
+.notice-accent {
+  border-color: var(--color-accent-300);
+  background: var(--color-accent-100);
+  color: var(--color-accent-800);
+}
+
+.notice-accent::before {
+  background: var(--color-accent);
+}
+
+.notice-success {
+  border-color: var(--color-success);
+  background: var(--color-success);
+  color: var(--color-bg);
+}
+
+.notice-success::before {
+  background: var(--color-accent);
+}
+
+.notice-danger {
+  border-color: var(--color-danger-line);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+/* ---------- Con quay lúc chờ ---------- */
 
 .spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid currentColor;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentcolor;
   border-right-color: transparent;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
@@ -388,202 +570,176 @@ button {
   }
 }
 
-/* ---------- Sample list ---------- */
+/* ---------- Danh sách mẫu ---------- */
 
 .sample-list {
   list-style: none;
-  margin: 0 0 16px;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
 }
 
 .sample-row {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface-alt);
-  padding: 14px;
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--color-divider);
 }
 
 .sample-row-head {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
-.sample-row-index {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 600;
-  flex: none;
+.sample-index {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--color-accent);
 }
 
-.sample-row-title {
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.sample-row-tools {
+.sample-tools {
   margin-left: auto;
   display: flex;
-  gap: 2px;
   flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 2px;
 }
 
-.sample-count {
-  align-self: center;
-  color: var(--text-muted);
-  font-size: 0.86rem;
+.sample-add {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-divider);
 }
 
-@media (max-width: 559px) {
-  .sample-row-head {
-    flex-wrap: wrap;
-  }
-
-  .sample-row-tools {
-    width: 100%;
-    margin-left: 0;
-    justify-content: flex-end;
-  }
-
-  .actions .sample-count {
-    flex: 1 1 100%;
-    text-align: center;
-  }
-}
-
-/* ---------- Summary (review + confirmation) ---------- */
+/* ---------- Bản tóm tắt ---------- */
 
 .summary-list {
-  margin: 0 0 20px;
-  display: grid;
-  gap: 0;
+  margin: 0;
 }
 
 .summary-list > div {
   display: grid;
   grid-template-columns: 1fr;
   gap: 2px;
-  padding: 9px 0;
-  border-bottom: 1px solid var(--border);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-divider);
 }
 
-.summary-list > div:last-child {
-  border-bottom: none;
-}
-
-@media (min-width: 520px) {
+@media (min-width: 560px) {
   .summary-list > div {
-    grid-template-columns: 180px 1fr;
-    gap: 12px;
+    grid-template-columns: 190px 1fr;
+    gap: var(--space-4);
     align-items: baseline;
   }
 }
 
 .summary-list dt {
-  color: var(--text-muted);
-  font-size: 0.86rem;
+  font-size: 12px;
+  color: var(--color-neutral-700);
 }
 
 .summary-list dd {
   margin: 0;
-  font-weight: 500;
+  font-size: 14px;
   overflow-wrap: anywhere;
 }
 
 .summary-subhead {
-  font-size: 0.95rem;
-  margin-bottom: 10px;
+  margin: var(--space-6) 0 var(--space-2);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
 }
 
-/* Bảng mẫu có thể rộng hơn màn hình điện thoại, cho cuộn ngang trong khung
-   riêng thay vì đẩy cả trang lệch sang phải. */
-.summary-table-wrap {
+/* Bảng mẫu rộng hơn màn hình điện thoại, cho cuộn ngang trong khung riêng
+   thay vì đẩy cả trang lệch sang phải. */
+.table-wrap {
   overflow-x: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
 }
 
-.summary-table {
+.table {
   width: 100%;
+  min-width: 460px;
   border-collapse: collapse;
-  font-size: 0.88rem;
-  min-width: 480px;
+  font-size: 14px;
 }
 
-.summary-table th,
-.summary-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border);
+.table th {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-divider);
   text-align: left;
-  vertical-align: top;
-}
-
-.summary-table thead th {
-  background: var(--surface-alt);
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
   white-space: nowrap;
 }
 
-.summary-table tbody tr:last-child td {
-  border-bottom: none;
+.table td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-divider);
+  vertical-align: top;
 }
 
-.summary-table .col-stt {
-  width: 46px;
-  text-align: center;
+.table tbody tr:hover {
+  background: var(--color-faintest);
 }
 
-/* ---------- Confirmation screen ---------- */
-
-.ma-ho-so {
-  margin-top: 12px;
-  padding: 14px 16px;
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-sm);
-  background: var(--surface-alt);
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-  font-size: clamp(1.15rem, 5vw, 1.6rem);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-align: center;
-  overflow-wrap: anywhere;
+.table .col-stt {
+  width: 48px;
+  text-align: right;
 }
+
+.table td.col-stt {
+  font-feature-settings: 'tnum';
+  color: var(--color-neutral-700);
+}
+
+/* ---------- Màn hình cuối ---------- */
+
+.next-step {
+  margin-bottom: var(--space-2);
+  font-size: 14px;
+  max-width: 52ch;
+  text-wrap: pretty;
+}
+
+.next-step-note {
+  margin-bottom: var(--space-4);
+  font-size: 12px;
+  color: var(--color-neutral-700);
+  max-width: 52ch;
+  text-wrap: pretty;
+}
+
+/* ---------- Khối mở ra đóng lại ở màn hình cuối ---------- */
 
 .disclosure {
-  width: 100%;
-  justify-content: flex-start;
-  font-size: 0.92rem;
-  color: var(--text);
+  padding-left: 0;
+  font-size: 14px;
 }
 
 .disclosure-body {
-  margin-top: 14px;
+  margin-top: var(--space-4);
 }
 
 /* ---------- Ghi chú thông tin đã lưu ---------- */
 
-/* Máy trong phòng thí nghiệm dùng chung, và thông tin đã lưu nay có cả địa
-   chỉ email. Nút dọn phải nhìn thấy được như một cái nút, không phải một dòng
-   chữ nhỏ ở chân thẻ. */
+/* Máy trong phòng thí nghiệm dùng chung, và thông tin đã lưu có cả địa chỉ
+   email. Nút dọn phải nhìn thấy được như một cái nút, không phải một dòng chữ
+   nhỏ ở chân thẻ. */
 .profile-note {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-divider);
 }
 
 .profile-note p {
-  margin: 0 0 10px;
-  color: var(--text-muted);
-  font-size: 0.82rem;
+  margin-bottom: var(--space-2);
+  font-size: 12px;
+  color: var(--color-neutral-700);
 }

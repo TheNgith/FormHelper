@@ -12,16 +12,20 @@ import './styles/index.css';
  */
 function NotConfigured() {
   return (
-    <main className="app">
-      <header className="masthead">
-        <h1>Đơn xin sử dụng thiết bị</h1>
-        <p>Bộ môn Hóa Hữu Cơ</p>
-      </header>
-      <div className="banner banner-error" role="alert">
-        <span>
-          <strong>Ứng dụng chưa được cấu hình</strong>
-          Bản dựng này thiếu thông tin dự án Firebase. Vui lòng báo cho bộ môn.
-        </span>
+    <main className="page">
+      <div className="sheet">
+        <header className="sheet-head">
+          <h1>Đơn xin sử dụng thiết bị</h1>
+        </header>
+        <div className="sheet-body">
+          <div className="notice notice-danger" role="alert">
+            <span>
+              <strong>Ứng dụng chưa được cấu hình</strong>
+              Bản dựng này thiếu thông tin dự án Firebase. Vui lòng báo cho bộ
+              môn.
+            </span>
+          </div>
+        </div>
       </div>
     </main>
   );

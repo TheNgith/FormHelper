@@ -72,7 +72,7 @@ export default function SampleList({ samples, errors, onChange }: Props) {
   return (
     <>
       {listError && (
-        <div className="banner banner-error" role="alert">
+        <div className="notice notice-danger" role="alert">
           <span>{listError}</span>
         </div>
       )}
@@ -94,13 +94,12 @@ export default function SampleList({ samples, errors, onChange }: Props) {
         ))}
       </ol>
 
-      <div className="actions">
+      {/* Số mẫu nay nằm dưới tiêu đề mục, cùng chỗ với "Các mẫu đo" — xem
+          FormScreen. Ở đây chỉ còn đúng nút thêm dòng. */}
+      <div className="sample-add">
         <button type="button" className="btn btn-secondary" onClick={addRow}>
           + Thêm mẫu
         </button>
-        <span className="sample-count" aria-live="polite">
-          {samples.length} mẫu
-        </span>
       </div>
     </>
   );

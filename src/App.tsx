@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import ConfirmationScreen from './screens/ConfirmationScreen';
 import FormScreen from './screens/FormScreen';
 import ReviewScreen from './screens/ReviewScreen';
-import { EQUIPMENT } from './lib/constants';
 import { generateMaHoSo } from './lib/maHoSo';
 import type { FormDraft, FormValues } from './lib/schema';
 import { emptyForm } from './lib/schema';
@@ -211,58 +210,79 @@ export default function App() {
   }, [reviewed, submitting, go]);
 
   return (
-    <main className="app">
-      <header className="masthead">
-        <h1>Đơn xin sử dụng thiết bị</h1>
-        <p>{EQUIPMENT} — Bộ môn Hóa Hữu Cơ</p>
-      </header>
+    <main className="page">
+      <div className="sheet">
+        <header className="sheet-head">
+          <h1>Đơn xin sử dụng thiết bị</h1>
 
-      <ol className="steps">
-        {STEP_ORDER.map((step) => (
-          <li
-            key={step}
-            data-state={
-              step === screen
-                ? 'current'
-                : STEP_ORDER.indexOf(step) < STEP_ORDER.indexOf(screen)
-                  ? 'done'
-                  : 'todo'
-            }
-            aria-current={step === screen ? 'step' : undefined}
-          >
-            {STEP_LABELS[step]}
-          </li>
-        ))}
-      </ol>
+          {/* Đơn đã gửi thì vạch tiến độ hết việc, chỗ đó nhường cho mã hồ sơ
+              — thứ duy nhất ở màn hình cuối mà sinh viên cần giữ lại. */}
+          {screen === 'done' && submitted ? (
+            <p className="sheet-meta">Mã hồ sơ {submitted.maHoSo}</p>
+          ) : (
+            <Progress screen={screen} />
+          )}
+        </header>
 
-      {screen === 'form' && (
-        <FormScreen
-          values={draft}
-          hasSavedProfile={hasSavedProfile}
-          onChange={patchDraft}
-          onValid={handleValid}
-          onReset={handleReset}
-          onForgetProfile={handleForgetProfile}
-        />
-      )}
+        <div className="sheet-body">
+          {screen === 'form' && (
+            <FormScreen
+              values={draft}
+              hasSavedProfile={hasSavedProfile}
+              onChange={patchDraft}
+              onValid={handleValid}
+              onReset={handleReset}
+              onForgetProfile={handleForgetProfile}
+            />
+          )}
 
-      {screen === 'review' && reviewed && (
-        <ReviewScreen
-          values={reviewed}
-          submitting={submitting}
-          error={submitError}
-          onEdit={handleEdit}
-          onConfirm={() => void handleConfirm()}
-        />
-      )}
+          {screen === 'review' && reviewed && (
+            <ReviewScreen
+              values={reviewed}
+              submitting={submitting}
+              error={submitError}
+              onEdit={handleEdit}
+              onConfirm={() => void handleConfirm()}
+            />
+          )}
 
-      {screen === 'done' && submitted && (
-        <ConfirmationScreen
-          values={submitted.values}
-          maHoSo={submitted.maHoSo}
-          onRestart={handleRestart}
-        />
-      )}
+          {screen === 'done' && submitted && (
+            <ConfirmationScreen
+              values={submitted.values}
+              maHoSo={submitted.maHoSo}
+              onRestart={handleRestart}
+            />
+          )}
+        </div>
+      </div>
     </main>
+  );
+}
+
+/**
+ * Ba vạch ngắn và cặp số "01 / 03" ở góc phải thanh tiêu đề.
+ *
+ * Bản thiết kế bỏ hẳn tên ba bước, chỉ còn hình. Tên bước vì vậy chuyển sang
+ * một dòng chữ chỉ trình đọc màn hình thấy — người dùng bàn phím và trình đọc
+ * vẫn nghe được "Bước 2 / 3: Xem lại", còn phần hình thì để `aria-hidden` cho
+ * khỏi đọc lại lần nữa.
+ */
+function Progress({ screen }: { screen: Screen }) {
+  const index = STEP_ORDER.indexOf(screen);
+
+  return (
+    <div className="progress">
+      <span className="sr-only">
+        Bước {index + 1} / {STEP_ORDER.length}: {STEP_LABELS[screen]}
+      </span>
+      <span className="progress-ticks" aria-hidden="true">
+        {STEP_ORDER.map((step, i) => (
+          <span key={step} data-done={i <= index} />
+        ))}
+      </span>
+      <span className="progress-label" aria-hidden="true">
+        {String(index + 1).padStart(2, '0')} / {String(STEP_ORDER.length).padStart(2, '0')}
+      </span>
+    </div>
   );
 }
