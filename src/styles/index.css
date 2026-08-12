@@ -571,36 +571,19 @@ button {
   margin-top: 14px;
 }
 
-/* Ô bẫy bot: đẩy hẳn ra ngoài vùng nhìn thấy thay vì display:none, vì nhiều
-   bot bỏ qua những ô bị ẩn hoàn toàn. */
-.honeypot {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-
 /* ---------- Ghi chú thông tin đã lưu ---------- */
 
+/* Máy trong phòng thí nghiệm dùng chung, và thông tin đã lưu nay có cả địa
+   chỉ email. Nút dọn phải nhìn thấy được như một cái nút, không phải một dòng
+   chữ nhỏ ở chân thẻ. */
 .profile-note {
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--border);
+}
+
+.profile-note p {
+  margin: 0 0 10px;
   color: var(--text-muted);
   font-size: 0.82rem;
-}
-
-.link-button {
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--accent);
-  font-size: inherit;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.link-button:hover {
-  color: var(--accent-hover);
 }

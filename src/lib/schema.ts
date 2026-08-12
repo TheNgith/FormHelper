@@ -4,8 +4,14 @@ import { CITY, DEPARTMENT, SAMPLE_STATES, SUPERVISORS } from './constants';
 
 /**
  * Nguồn dữ liệu duy nhất cho biểu mẫu: kiểu dữ liệu, giá trị mặc định và
- * thông báo lỗi đều lấy từ đây. Màn hình nhập, bản xem lại, file PDF và dòng
- * ghi vào Google Sheet đều dùng chung một kiểu `FormValues`.
+ * thông báo lỗi đều lấy từ đây. Màn hình nhập, bản xem lại, file PDF và tài
+ * liệu ghi vào Firestore đều dùng chung một kiểu `FormValues`.
+ *
+ * Lưu ý về ranh giới: từ khi bỏ Apps Script, trình duyệt nói chuyện thẳng với
+ * Firestore, nên schema này chạy hoàn toàn ở phía người dùng — nó giúp người
+ * điền đơn nhận ra lỗi, chứ không ngăn được ai. Việc ngăn nằm ở
+ * firestore.rules. Thêm ràng buộc nào thật sự quan trọng thì phải thêm ở cả
+ * hai nơi.
  */
 
 const required = (label: string) =>
@@ -128,6 +134,14 @@ export function todayISO(): string {
   return new Date(now.getTime() - offset).toISOString().slice(0, 10);
 }
 
+/**
+ * Biểu mẫu trống.
+ *
+ * `email` từng là tham số vì nó đến từ token đăng nhập. Không còn đăng nhập
+ * nên nó là một ô như mọi ô khác: sinh viên tự gõ, `formSchema` kiểm tra dạng
+ * địa chỉ, và firestore.rules chỉ chốt được độ dài. Không ai chứng minh nó
+ * thuộc về người gửi nữa.
+ */
 export function emptyForm(): FormDraft {
   return {
     department: DEPARTMENT,

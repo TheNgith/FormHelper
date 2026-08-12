@@ -8,10 +8,8 @@ import { validateForm } from '../lib/schema';
 
 type Props = {
   values: FormDraft;
-  honeypot: string;
   hasSavedProfile: boolean;
   onChange: (patch: Partial<FormDraft>) => void;
-  onHoneypotChange: (value: string) => void;
   onValid: (values: FormValues) => void;
   onReset: () => void;
   onForgetProfile: () => void;
@@ -19,10 +17,8 @@ type Props = {
 
 export default function FormScreen({
   values,
-  honeypot,
   hasSavedProfile,
   onChange,
-  onHoneypotChange,
   onValid,
   onReset,
   onForgetProfile,
@@ -83,14 +79,21 @@ export default function FormScreen({
         </p>
         <ApplicantFields values={values} errors={errors} onChange={patchField} />
 
+        {/* Không còn đăng nhập nên thông tin đã lưu — nay có cả địa chỉ email
+            — sống qua nhiều phiên trình duyệt trên cùng một máy. Nút dọn vì
+            vậy là một nút thật, đặt ngay dưới các ô nó điền vào, chứ không
+            phải một dòng chữ nhỏ ở chân trang. Máy trong phòng thí nghiệm
+            dùng chung. */}
         {hasSavedProfile && (
-          <p className="profile-note">
-            Thông tin trên được điền sẵn từ lần nộp trước.{' '}
-            <button type="button" className="link-button" onClick={onForgetProfile}>
+          <div className="profile-note">
+            <p>
+              Thông tin trên, kể cả email, được điền sẵn từ lần nộp trước và
+              lưu ngay trên máy này.
+            </p>
+            <button type="button" className="btn btn-secondary" onClick={onForgetProfile}>
               Quên thông tin đã lưu
-            </button>{' '}
-            nếu đây là máy dùng chung.
-          </p>
+            </button>
+          </div>
         )}
       </section>
 
@@ -103,21 +106,10 @@ export default function FormScreen({
         <SampleList samples={values.samples} errors={errors} onChange={patchSamples} />
       </section>
 
-      {/* Bẫy bot: ô này ẩn với người dùng và bị bỏ qua khi duyệt bằng bàn
-          phím hay trình đọc màn hình, nhưng phần lớn bot điền tự động vẫn
-          điền vào. Máy chủ thấy ô có nội dung thì lặng lẽ bỏ đơn đó. */}
-      <div className="honeypot" aria-hidden="true">
-        <label htmlFor="website">Website</label>
-        <input
-          id="website"
-          name="website"
-          type="text"
-          tabIndex={-1}
-          autoComplete="off"
-          value={honeypot}
-          onChange={(e) => onHoneypotChange(e.target.value)}
-        />
-      </div>
+      {/* Ô bẫy bot từng nằm ở đây. Nó tồn tại vì hồi đó bất kỳ ai cũng POST
+          được vào endpoint. Nay việc đó thuộc về App Check: mỗi lệnh ghi đều
+          kèm một token chứng thực rằng yêu cầu đến từ trang này, và một cái
+          bẫy trong HTML thì không thêm được gì vào đó. */}
 
       <div className="actions actions-end">
         <button type="button" className="btn btn-secondary" onClick={onReset}>

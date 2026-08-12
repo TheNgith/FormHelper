@@ -130,16 +130,22 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
           placeholder="0912345678"
           onChange={(v) => onChange({ phone: v })}
         />
+        {/* Ô này từng bị khóa vì giá trị đến từ token đăng nhập. Không còn
+            đăng nhập nên sinh viên tự gõ, và không gì chứng minh địa chỉ là
+            của họ. Câu nhắc @ump.edu.vn ở đây là lời khuyên đọc được và sửa
+            được — cố ý không đưa nó vào firestore.rules, nơi nó sẽ chặn thẳng
+            một lá đơn thật bằng một câu lỗi khó hiểu. */}
         <TextField
           id="email"
           label="Mail"
           className="span-2"
           value={values.email}
           error={errors.email}
+          hint="Dùng địa chỉ trường cấp (@ump.edu.vn) để bộ môn liên hệ lại được."
           type="email"
           inputMode="email"
           autoComplete="email"
-          placeholder="ten@example.com"
+          placeholder="ngocanh@ump.edu.vn"
           onChange={(v) => onChange({ email: v })}
         />
         <TextField
