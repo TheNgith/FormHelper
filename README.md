@@ -418,13 +418,39 @@ Ràng buộc "phải ở Firebase Hosting" của bản cũ — luồng OAuth qua
 
 ## Phông chữ
 
-`public/fonts/` chứa bốn kiểu Tinos đã cắt gọn còn Latin + tiếng Việt (2,2 MB
-xuống còn khoảng 330 KB). Tinos tương thích metric với Times New Roman và phát
-hành theo giấy phép SIL Open Font License 1.1 (`public/fonts/OFL.txt`).
+Đơn được đặt bằng **Libertinus**, phát hành theo giấy phép SIL Open Font
+License 1.1 (`public/fonts/OFL.txt`) — dùng, sửa và phát hành kèm ứng dụng đều
+được, miễn là bản giấy phép đi cùng bộ phông và không đem bán riêng bộ phông.
 
-Tinos **không phải** Times New Roman — Times New Roman có bản quyền và không
-được phép phát hành kèm. Hai phông cùng bề rộng chữ nên bố cục giống nhau,
-nhưng dáng chữ vẫn có khác biệt nhỏ.
+Google Fonts chia họ Libertinus thành nhiều dự án, và **Libertinus Math chỉ có
+đúng một kiểu Regular** — không bold, không italic. Đơn thì cần cả ba, nên bốn
+ô của pdfmake được lấp thế này:
+
+| Kiểu | File |
+| --- | --- |
+| normal | `LibertinusMath-Regular.ttf` |
+| bold | `LibertinusSerif-Bold.ttf` |
+| italics | `LibertinusSerif-Italic.ttf` |
+| bolditalics | `LibertinusSerif-SemiBoldItalic.ttf` |
+
+Ghép hai dự án không để lại vết nối vì bên dưới vẫn là một chữ: cùng em 1000
+đơn vị, cùng chiều cao chữ hoa 658 và chiều cao chữ thường 429, và 65 trên 81
+chữ Latin + tiếng Việt đem so là **trùng khít từng đường nét, cùng bề rộng**.
+Math chỉ vẽ lại vài glyph mà công thức toán cần rộng hơn (J f j và cặp ngoặc).
+
+Ô `bolditalics` cố tình lệch nhịp: `LibertinusSerif-BoldItalic` **thiếu đúng
+bốn chữ ơ ư Ơ Ư** — bốn chữ mà đơn này không thể thiếu ("Bộ môn Hóa Hữu Cơ",
+"sử dụng"). SemiBoldItalic đủ tiếng Việt nên nó giữ ô đó. Hiện chưa chỗ nào
+vừa đậm vừa nghiêng; đây là lưới an toàn cho ngày có.
+
+Bốn file đã cắt gọn còn Latin + tiếng Việt + Hy Lạp + ký hiệu toán (3,7 MB
+xuống còn khoảng 720 KB). Giữ lại Hy Lạp và ký hiệu là có chủ đích: sinh viên
+gõ tên mẫu vào bảng, và β-cyclodextrin hay CaCO₃ → CaO không được ra ô vuông
+trắng.
+
+Không phải tin bài viết này: `src/lib/pdf/fonts.test.ts` đọc thẳng bảng `cmap`
+của bốn file thật trong `public/fonts/` và bắt lỗi nếu thiếu bất kỳ chữ cái
+tiếng Việt, ký tự ASCII hay ký hiệu hóa học nào.
 
 Dựng lại phông (cần `pip install fonttools brotli`):
 
@@ -432,25 +458,55 @@ Dựng lại phông (cần `pip install fonttools brotli`):
 ./scripts/build-fonts.sh
 ```
 
+### Máy người xem không cần cài phông
+
+pdfmake nhúng thẳng phần phông đã dùng vào file PDF (subset, dạng Type0/CID).
+Sinh viên tải file về là xem và in được ở bất kỳ máy nào, kể cả máy chưa từng
+nghe tới Libertinus, và chữ vẫn bôi–chép–tìm được. Kiểm lại bằng:
+
+```bash
+npx tsx scripts/preview-pdf.ts preview/don-mau.pdf
+```
+
+rồi mở file và xem *Thuộc tính → Phông chữ*: cả ba kiểu phải ghi *Embedded
+Subset*.
+
+Chỗ duy nhất còn hỏng được là lúc **dựng** file: trình duyệt phải tải bốn file
+`.ttf` từ `public/fonts/`. Tải hụt thì không có PDF nào ra đời cả — màn hình
+báo lỗi và lần bấm sau thử lại từ đầu — chứ không có chuyện ra một file PDF
+thiếu chữ.
+
 ## Bố cục file PDF
 
-Khổ A4, lề 1,5 cm, chữ Tinos 12 pt. Với các con số này thì đơn có tối đa **6
-mẫu** nằm gọn một trang; đơn dài hơn tự sang trang mới, hàng tiêu đề của bảng
-được lặp lại và không dòng mẫu nào bị cắt ngang trang.
+Dựng theo bản thiết kế ở [docs/don.html](docs/don.html): khổ A4, lề trên,
+phải, dưới 2 cm, **lề trái 3 cm** để chừa chỗ đóng ghim, chữ 13 pt.
 
-Bản đầu dựng theo đúng mẫu giấy (13 pt, lề 2 cm) thì **không đơn nào vừa một
-trang**, kể cả đơn chỉ có một mẫu: riêng ba ô chữ ký đã chiếm gần một phần tư
-trang giấy. Các con số hiện tại là bản nén để đổi lấy chỗ trống đó.
+Đơn ngắn nằm gọn một trang. Đơn dài tự sang trang mới, hàng tiêu đề của bảng
+được lặp lại, không dòng mẫu nào bị cắt ngang trang, và hai ô chữ ký luôn đi
+liền một khối. Đếm số trang theo số mẫu:
 
-Mã hồ sơ được in nhỏ màu xám ở góc trên bên phải **mọi trang**, nằm ngoài
-phần thân nên không đụng vào dòng quốc hiệu.
+```bash
+npx tsx scripts/check-pagination.ts
+```
+
+Một chỗ dễ sai: `line-height` của CSS **không bê thẳng sang pdfmake được**.
+CSS nhân với cỡ chữ, pdfmake nhân với chiều cao tự nhiên của phông (Libertinus
+cao 1,14 em). Để nguyên 1,4 thì mỗi dòng dôi 2,5 pt, cộng dồn hơn ba mươi dòng
+là đủ đẩy khối chữ ký sang trang thứ hai ngay cả với đơn ba mẫu — nên hằng số
+trong `docDefinition.ts` viết là `1.4 / 1.14`.
+
+Ngày tháng nằm ở cột phải đầu đơn, ngay dưới dòng "Độc lập - Tự do - Hạnh
+phúc", không còn ở cuối trang. Ô "Xác nhận của bộ môn" đã bỏ.
+
+Mã hồ sơ được in nhỏ màu xám ở góc **dưới bên trái mọi trang**, cách mép giấy
+1 cm — nằm trong phần lề nên không đụng vào nội dung.
 
 ## Cấu trúc thư mục
 
 ```
 firestore.rules          Một nửa ranh giới bảo mật — đọc trước khi sửa
 firestore.rules.test.ts  Bài kiểm tra cho nó (App Check thì không có bài nào)
-public/fonts/            Phông Tinos đã cắt gọn + giấy phép
+public/fonts/            Phông Libertinus đã cắt gọn + giấy phép
 scripts/export-csv.ts    Xuất CSV tại máy bằng service account
 scripts/submissionRows.ts  Đọc tài liệu thành dòng + dựng CSV (có bài kiểm tra)
 scripts/                 Dựng phông, xem thử PDF, đếm số trang
@@ -470,6 +526,12 @@ src/screens/             Ba màn hình của sinh viên
   [src/lib/constants.ts](src/lib/constants.ts).
 - **Đổi trạng thái mẫu cho phép** — sửa `SAMPLE_STATES` cùng file.
 - **Đổi tên bộ môn hoặc thiết bị** — sửa `DEPARTMENT` / `EQUIPMENT` cùng file.
+- **Đổi tiêu đề cơ quan ở đầu đơn** — sửa `LETTERHEAD` / `SCHOOL` cùng file.
+- **Đổi phông** — sửa `FACES` trong
+  [scripts/build-fonts.sh](scripts/build-fonts.sh) và `LIBERTINUS_FAMILY`
+  trong [src/lib/pdf/fonts.ts](src/lib/pdf/fonts.ts), chạy lại script, rồi
+  chạy `npm test`: bài kiểm tra bảng `cmap` sẽ chặn nếu phông mới thiếu chữ
+  tiếng Việt.
 - **Thêm tên miền mới cho trang** — thêm vào khóa reCAPTCHA *trước* khi trỏ
   tên miền, nếu không App Check chặn sạch mọi lá đơn từ đó.
 - **Đổi dạng mã hồ sơ** — sửa `MA_HO_SO_PATTERN` và `RANDOM_LENGTH` trong

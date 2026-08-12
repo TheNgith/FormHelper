@@ -16,6 +16,7 @@ import { dirname, resolve } from 'node:path';
 import pdfMake from 'pdfmake';
 
 import { buildDocDefinition } from '../src/lib/pdf/docDefinition';
+import { nodeFonts } from './fonts';
 import type { FormValues } from '../src/lib/schema';
 
 const SAMPLE: FormValues = {
@@ -27,7 +28,7 @@ const SAMPLE: FormValues = {
   phone: '0912345678',
   className: 'D2A',
   cohort: '2022 - 2026',
-  city: 'TP. HCM',
+  city: 'TP. Hồ Chí Minh',
   date: '2026-08-11',
   samples: [
     { name: 'Nguyên liệu Dapagliflozin DAP bình thường', state: 'Rắn', solvent: 'Methanol' },
@@ -40,17 +41,6 @@ const SAMPLE: FormValues = {
     { name: 'HPTR DAP - Crosspovidon', state: 'Rắn', solvent: 'Methanol' },
     { name: 'Dung dịch chuẩn đối chiếu (ẫ ệ ượ ỹ Đ ồ)', state: 'Dung dịch', solvent: 'Ethanol' },
   ],
-};
-
-const FONT_DIR = resolve(import.meta.dirname, '..', 'public', 'fonts');
-
-const fonts = {
-  Tinos: {
-    normal: `${FONT_DIR}/Tinos-Regular.ttf`,
-    bold: `${FONT_DIR}/Tinos-Bold.ttf`,
-    italics: `${FONT_DIR}/Tinos-Italic.ttf`,
-    bolditalics: `${FONT_DIR}/Tinos-BoldItalic.ttf`,
-  },
 };
 
 const out = resolve(process.argv[2] ?? 'preview/don-mau.pdf');
@@ -70,7 +60,7 @@ const values: FormValues = Number.isFinite(sampleCount)
 
 mkdirSync(dirname(out), { recursive: true });
 
-pdfMake.setFonts(fonts);
+pdfMake.setFonts(nodeFonts());
 
 await pdfMake
   .createPdf(buildDocDefinition({ values, maHoSo: 'IR-20260811-A7K3' }))

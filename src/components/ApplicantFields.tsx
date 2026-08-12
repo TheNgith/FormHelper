@@ -121,7 +121,7 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
         />
         <TextField
           id="phone"
-          label="SĐT"
+          label="Số điện thoại"
           value={values.phone}
           error={errors.phone}
           type="tel"

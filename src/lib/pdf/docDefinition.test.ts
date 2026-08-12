@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { FormValues } from '../schema';
 import { buildDocDefinition, pdfFilename } from './docDefinition';
+import { LIBERTINUS_FAMILY, PDF_FONT } from './fonts';
 
 const VALUES: FormValues = {
   department: 'Bộ môn Hóa Hữu Cơ',
@@ -12,7 +13,7 @@ const VALUES: FormValues = {
   phone: '0912345678',
   className: 'D2A',
   cohort: '2022 - 2026',
-  city: 'TP. HCM',
+  city: 'TP. Hồ Chí Minh',
   date: '2026-08-11',
   samples: [
     { name: 'Mẫu A', state: 'Rắn', solvent: 'Methanol' },
@@ -44,10 +45,30 @@ describe('buildDocDefinition', () => {
   const doc = buildDocDefinition({ values: VALUES, maHoSo: 'IR-20260811-A7K3' });
   const text = allText(doc.content).join('\n');
 
-  it('in đủ phần quốc hiệu và tiêu đề đơn', () => {
-    expect(text).toContain('CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM');
+  it('in đủ phần tiêu đề cơ quan, quốc hiệu và tên đơn', () => {
+    expect(text).toContain('ĐẠI HỌC Y DƯỢC');
+    expect(text).toContain('THÀNH PHỐ HỒ CHÍ MINH');
+    expect(text).toContain('Trường Dược');
+    expect(text).toContain('CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM');
     expect(text).toContain('Độc lập - Tự do - Hạnh phúc');
     expect(text).toContain('ĐƠN XIN SỬ DỤNG THIẾT BỊ');
+  });
+
+  it('ghi đủ sáu dòng thông tin sinh viên', () => {
+    for (const label of [
+      'Em tên là:',
+      'Mail:',
+      'Lớp:',
+      'Mã số sinh viên:',
+      'Số điện thoại:',
+      'Niên khóa:',
+    ]) {
+      expect(text, label).toContain(label);
+    }
+    expect(text).toContain('ngocanh@example.com');
+    expect(text).toContain('2200123');
+    expect(text).toContain('0912345678');
+    expect(text).toContain('2022 - 2026');
   });
 
   it('nêu tên giảng viên kèm chức danh trong câu mở đầu', () => {
@@ -69,33 +90,46 @@ describe('buildDocDefinition', () => {
   });
 
   it('viết ngày tháng theo lối tiếng Việt', () => {
-    expect(text).toContain('TP. HCM, ngày 11 tháng 08 năm 2026');
+    expect(text).toContain('TP. Hồ Chí Minh, ngày 11 tháng 08 năm 2026');
   });
 
-  it('có đủ ba ô chữ ký', () => {
+  it('có hai ô chữ ký, không còn ô xác nhận của bộ môn', () => {
     expect(text).toContain('Giảng viên hướng dẫn');
     expect(text).toContain('Người làm đơn');
-    expect(text).toContain('Xác nhận của bộ môn');
+    expect(text).not.toContain('Xác nhận của bộ môn');
   });
 
-  it('đặt mã hồ sơ ở đầu trang, không nằm trong phần thân', () => {
+  it('không tách khối chữ ký ra hai trang', () => {
+    const content = doc.content as Array<Record<string, any>>;
+    const block = content.find((item) => item && item.unbreakable);
+    expect(block).toBeDefined();
+    expect(allText(block).join('\n')).toContain('Người làm đơn');
+  });
+
+  it('đặt mã hồ sơ ở cuối trang, không nằm trong phần thân', () => {
     expect(text).not.toContain('IR-20260811-A7K3');
-    const header = doc.header as () => { text: string };
-    expect(header().text).toBe('Mã hồ sơ: IR-20260811-A7K3');
+    expect(doc.header).toBeUndefined();
+    const footer = doc.footer as () => { text: string };
+    expect(footer().text).toBe('Mã hồ sơ: IR-20260811-A7K3');
   });
 
-  it('dùng khổ A4 và lề 1,5 cm', () => {
+  it('dùng khổ A4, lề 2 cm và lề trái 3 cm', () => {
     expect(doc.pageSize).toBe('A4');
-    expect(doc.pageMargins).toEqual([43, 43, 43, 43]);
+    expect(doc.pageMargins).toEqual([85, 57, 57, 57]);
+  });
+
+  it('dùng phông Libertinus đã đăng ký cho toàn bộ đơn', () => {
+    expect(doc.defaultStyle?.font).toBe(PDF_FONT);
+    expect(Object.keys(LIBERTINUS_FAMILY)).toContain(PDF_FONT);
   });
 
   describe('bảng mẫu đo', () => {
     it('có hàng tiêu đề đúng bốn cột', () => {
       expect(tableBody(doc)[0].map((c) => c.text)).toEqual([
         'STT',
-        'TÊN MẪU',
-        'TRẠNG THÁI MẪU',
-        'DUNG MÔI CÓ THỂ HOÀ TAN',
+        'Tên mẫu',
+        'Trạng thái mẫu',
+        'Dung môi có thể hòa tan',
       ]);
     });
 

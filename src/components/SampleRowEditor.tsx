@@ -132,7 +132,7 @@ export default function SampleRowEditor({
 
         <div className="field">
           <label htmlFor={solventId}>
-            Dung môi có thể hoà tan<span className="req">*</span>
+            Dung môi có thể hòa tan<span className="req">*</span>
           </label>
           <input
             id={solventId}

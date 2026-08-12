@@ -7,7 +7,16 @@
 
 export const DEPARTMENT = 'Bộ môn Hóa Hữu Cơ';
 
-export const CITY = 'TP. HCM';
+export const CITY = 'TP. Hồ Chí Minh';
+
+/**
+ * Tiêu đề cơ quan ở góc trái đầu đơn, xếp từ trên xuống. Hai dòng đầu in
+ * hoa đậm, dòng cuối là bộ môn nên lấy từ `DEPARTMENT` để khỏi lệch nhau.
+ */
+export const LETTERHEAD = ['ĐẠI HỌC Y DƯỢC', 'THÀNH PHỐ HỒ CHÍ MINH'] as const;
+
+/** Dòng nằm giữa tên trường và tên bộ môn. */
+export const SCHOOL = 'Trường Dược';
 
 /** Thiết bị duy nhất mà đơn này áp dụng. */
 export const EQUIPMENT = 'máy quang phổ hồng ngoại (FT-IR)';

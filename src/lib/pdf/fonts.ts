@@ -1,28 +1,31 @@
 /**
- * Nạp bộ phông Tinos vào hệ thống file ảo của pdfmake.
+ * Nạp bộ phông Libertinus vào hệ thống file ảo của pdfmake.
  *
  * pdfmake nhận nội dung phông dưới dạng base64. Bốn file .ttf nằm trong
  * public/fonts/ và chỉ được tải khi thực sự cần dựng PDF, nên màn hình nhập
  * liệu không phải gánh thêm mấy trăm KB.
+ *
+ * Bốn kiểu chữ lấy từ hai dự án khác nhau trên Google Fonts vì Libertinus
+ * Math chỉ có duy nhất kiểu Regular. Lý do ghép được — và vì sao ô
+ * bolditalics dùng SemiBoldItalic chứ không phải BoldItalic — chép trong
+ * scripts/build-fonts.sh.
  */
 
 import type pdfMakeType from 'pdfmake/build/pdfmake';
 
-const FONT_FILES = [
-  'Tinos-Regular.ttf',
-  'Tinos-Bold.ttf',
-  'Tinos-Italic.ttf',
-  'Tinos-BoldItalic.ttf',
-] as const;
-
-export const TINOS_FAMILY = {
-  Tinos: {
-    normal: 'Tinos-Regular.ttf',
-    bold: 'Tinos-Bold.ttf',
-    italics: 'Tinos-Italic.ttf',
-    bolditalics: 'Tinos-BoldItalic.ttf',
+export const LIBERTINUS_FAMILY = {
+  Libertinus: {
+    normal: 'LibertinusMath-Regular.ttf',
+    bold: 'LibertinusSerif-Bold.ttf',
+    italics: 'LibertinusSerif-Italic.ttf',
+    bolditalics: 'LibertinusSerif-SemiBoldItalic.ttf',
   },
 };
+
+/** Tên họ phông khai trong doc definition. */
+export const PDF_FONT = 'Libertinus';
+
+const FONT_FILES = Object.values(LIBERTINUS_FAMILY.Libertinus);
 
 export function toBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
@@ -56,7 +59,7 @@ export function registerFonts(pdfMake: typeof pdfMakeType): Promise<void> {
     );
 
     pdfMake.addVirtualFileSystem(Object.fromEntries(entries));
-    pdfMake.addFonts(TINOS_FAMILY);
+    pdfMake.addFonts(LIBERTINUS_FAMILY);
   })().catch((error) => {
     // Cho phép thử lại ở lần bấm sau thay vì kẹt luôn ở trạng thái lỗi.
     registered = null;

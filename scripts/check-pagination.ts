@@ -12,18 +12,10 @@ import { resolve } from 'node:path';
 import pdfMake from 'pdfmake';
 
 import { buildDocDefinition } from '../src/lib/pdf/docDefinition';
+import { nodeFonts } from './fonts';
 import type { FormValues } from '../src/lib/schema';
 
-const FONT_DIR = resolve(import.meta.dirname, '..', 'public', 'fonts');
-
-pdfMake.setFonts({
-  Tinos: {
-    normal: `${FONT_DIR}/Tinos-Regular.ttf`,
-    bold: `${FONT_DIR}/Tinos-Bold.ttf`,
-    italics: `${FONT_DIR}/Tinos-Italic.ttf`,
-    bolditalics: `${FONT_DIR}/Tinos-BoldItalic.ttf`,
-  },
-});
+pdfMake.setFonts(nodeFonts());
 
 const BASE: Omit<FormValues, 'samples'> = {
   department: 'Bộ môn Hóa Hữu Cơ',
@@ -34,7 +26,7 @@ const BASE: Omit<FormValues, 'samples'> = {
   phone: '0912345678',
   className: 'D2A',
   cohort: '2022 - 2026',
-  city: 'TP. HCM',
+  city: 'TP. Hồ Chí Minh',
   date: '2026-08-11',
 };
 

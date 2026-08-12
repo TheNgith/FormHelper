@@ -1,49 +1,93 @@
 import type {
+  Column,
   Content,
   TDocumentDefinitions,
 } from 'pdfmake/interfaces';
 
-import { EQUIPMENT, supervisorFullLabel } from '../constants';
+import { EQUIPMENT, LETTERHEAD, SCHOOL, supervisorFullLabel } from '../constants';
 import type { FormValues } from '../schema';
 import { formatVietnameseDate, nfc } from '../text';
+import { PDF_FONT } from './fonts';
 
 /**
- * Dựng bố cục file PDF theo đúng mẫu giấy của bộ môn.
+ * Dựng bố cục file PDF theo bản thiết kế lại ở docs/don.html.
  *
  * Mọi khoảng cách đều tính bằng point (1 pt = 1/72 inch) để khi in ở tỉ lệ
- * 100% trên khổ A4 thì lề khớp với bản in sẵn: lề 43 pt ≈ 1,5 cm.
+ * 100% trên khổ A4 thì lề khớp với bản mẫu: lề trên, phải, dưới 2 cm và lề
+ * trái 3 cm — chừa chỗ đóng ghim hoặc kẹp vào bìa hồ sơ.
  *
- * Các con số dưới đây được chọn để một đơn cỡ trung bình nằm gọn trong một
- * trang. Khổ A4 chỉ cao 842 pt, mà riêng ba ô chữ ký đã chiếm gần một phần
- * tư trang, nên với bản 13 pt / lề 2 cm thì ngay cả đơn một mẫu cũng tràn
- * sang trang thứ hai. Bản nén này chứa được sáu mẫu trên một trang; đơn dài
- * hơn vẫn tự sang trang mới và khối chữ ký luôn đi liền một chỗ.
+ * So với bản trước, đơn lấy lại dáng công văn: hai cột tiêu đề ở đầu trang,
+ * ngày tháng nằm ngay dưới dòng "Độc lập - Tự do - Hạnh phúc" thay vì ở cuối
+ * trang, thông tin sinh viên xếp một cột cho dễ dò, và bỏ ô "Xác nhận của bộ
+ * môn". Chính chỗ bỏ đó bù lại phần lề rộng thêm, nên đơn cỡ trung bình vẫn
+ * nằm gọn trong một trang; đơn dài hơn tự sang trang mới và khối chữ ký luôn
+ * đi liền một chỗ.
  */
 
-const BASE_FONT_SIZE = 12;
-const LINE_HEIGHT = 1.2;
-const PAGE_MARGIN = 43;
-
-/** Khoảng trống chừa cho chữ ký tay. */
-const SIGNATURE_SPACE = 55;
+const BASE_FONT_SIZE = 13;
 
 /**
- * Bề rộng của chuỗi "Kính gửi: " ở cỡ chữ nền, đo từ bảng metric của phông
- * Tinos. Dùng làm mức thụt đầu dòng để tên giảng viên nằm thẳng cột với tên
- * bộ môn ở dòng trên.
+ * Bản thiết kế đặt `line-height: 1.4`, nhưng con số đó không bê thẳng sang
+ * pdfmake được. CSS nhân 1,4 với cỡ chữ; pdfmake nhân với chiều cao tự nhiên
+ * của phông, mà cả bốn kiểu Libertinus đều cao 1,14 em (ascender 894 + descender
+ * 246 trên em 1000). Để nguyên 1,4 thì mỗi dòng dôi ra 2,5 pt, và cộng dồn hơn
+ * ba mươi dòng là đủ đẩy khối chữ ký sang trang thứ hai ngay cả với đơn ba mẫu.
  */
-const KINH_GUI_INDENT = 49.2;
+const LINE_HEIGHT = 1.4 / 1.14;
+
+/** Cỡ chữ nhỏ hơn cho hai dòng in hoa ở tiêu đề và cho ghi chú dưới ô ký. */
+const SMALL_FONT_SIZE = 12;
+
+/** Bảng mẫu đo hạ xuống nửa point cho gọn bề ngang. */
+const TABLE_FONT_SIZE = 12.5;
+
+/** 2 cm và 3 cm quy ra point. */
+const MARGIN = 57;
+const MARGIN_LEFT = 85;
+
+/** Khoảng trống chừa cho chữ ký tay. */
+const SIGNATURE_SPACE = 34;
 
 export type PdfData = {
   values: FormValues;
   maHoSo: string;
 };
 
-/** Một dòng "Nhãn: giá trị" trong khối thông tin sinh viên. */
-function labelled(label: string, value: string): Content {
+/**
+ * Một dòng "Nhãn: giá trị" trong khối thông tin sinh viên. Nhãn chiếm đúng
+ * 130 pt nên mọi giá trị đều bắt đầu thẳng một cột, kể cả khi nhãn dài ngắn
+ * khác nhau. `spaceBelow` để dòng cuối khối chừa thêm khoảng trống.
+ */
+function labelled(label: string, value: string, spaceBelow = 2): Content {
   return {
-    text: [{ text: `${label} `, bold: false }, { text: nfc(value) }],
-    margin: [0, 0, 0, 2],
+    columns: [
+      { width: 130, text: label },
+      { width: '*', text: nfc(value) },
+    ],
+    columnGap: 0,
+    margin: [0, 0, 0, spaceBelow],
+  };
+}
+
+/** Một ô chữ ký: chức danh, ghi chú, khoảng trống rồi tên. */
+function signature(role: string, name: string): Column {
+  return {
+    width: '50%',
+    stack: [
+      { text: role, bold: true, alignment: 'center' },
+      {
+        text: '(Ký và ghi rõ họ tên)',
+        italics: true,
+        fontSize: SMALL_FONT_SIZE,
+        alignment: 'center',
+      },
+      {
+        text: nfc(name),
+        bold: true,
+        alignment: 'center',
+        margin: [0, SIGNATURE_SPACE, 0, 0],
+      },
+    ],
   };
 }
 
@@ -54,96 +98,114 @@ export function buildDocDefinition({ values, maHoSo }: PdfData): TDocumentDefini
     solvent: nfc(s.solvent),
   }));
 
+  const department = nfc(values.department);
+  const supervisor = nfc(supervisorFullLabel(values.supervisor));
+
   return {
     pageSize: 'A4',
     pageOrientation: 'portrait',
-    pageMargins: [PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN],
+    pageMargins: [MARGIN_LEFT, MARGIN, MARGIN, MARGIN],
 
     defaultStyle: {
-      font: 'Tinos',
+      font: PDF_FONT,
       fontSize: BASE_FONT_SIZE,
       lineHeight: LINE_HEIGHT,
     },
 
-    // Mã hồ sơ nằm ngoài phần thân, sát mép trên bên phải của mọi trang.
-    // Đặt ở 20 pt tính từ mép giấy nên không chạm vào dòng quốc hiệu (bắt
-    // đầu ở 57 pt).
-    header: () => ({
+    // Mã hồ sơ nằm ngoài phần thân, ở góc dưới bên trái của mọi trang — cách
+    // mép giấy 1 cm, tức là lọt vào phần lề chứ không chen vào nội dung.
+    footer: () => ({
       text: `Mã hồ sơ: ${maHoSo}`,
-      alignment: 'right',
-      fontSize: 8,
+      fontSize: 9.5,
       color: '#888888',
       lineHeight: 1,
-      margin: [PAGE_MARGIN, 20, PAGE_MARGIN, 0],
+      margin: [28, 15, 0, 0],
     }),
 
     content: [
-      {
-        text: 'CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM',
-        bold: true,
-        alignment: 'center',
-      },
-      {
-        text: 'Độc lập - Tự do - Hạnh phúc',
-        bold: true,
-        alignment: 'center',
-        margin: [0, 6, 0, 0],
-      },
-      {
-        text: 'ĐƠN XIN SỬ DỤNG THIẾT BỊ',
-        bold: true,
-        alignment: 'center',
-        margin: [0, 18, 0, 18],
-      },
-
-      // Khối "Kính gửi" để nguyên chiều rộng trang, phần thông tin sinh viên
-      // mới chia hai cột. Nhờ vậy cột phải (MSSV, SĐT, niên khóa) luôn bắt
-      // đầu ngang hàng với dòng "Em tên là" mà không cần chèn dòng trống.
-      {
-        text: [{ text: 'Kính gửi: ' }, { text: nfc(values.department) }],
-        margin: [0, 0, 0, 2],
-      },
-      {
-        text: nfc(supervisorFullLabel(values.supervisor)),
-        // Thụt vào cho thẳng hàng với tên bộ môn ở dòng trên.
-        margin: [KINH_GUI_INDENT, 0, 0, 6],
-      },
-
+      // Tiêu đề công văn: cơ quan bên trái, quốc hiệu bên phải. Cột phải rộng
+      // hơn vì dòng "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM" phải nằm trọn một
+      // dòng, không được xuống hàng.
       {
         columns: [
           {
-            width: '58%',
+            width: '40%',
             stack: [
-              labelled('Em tên là:', values.studentName),
-              labelled('Mail:', values.email),
-              labelled('Lớp:', values.className),
+              ...LETTERHEAD.map((line) => ({
+                text: line,
+                bold: true,
+                fontSize: SMALL_FONT_SIZE,
+                alignment: 'center' as const,
+              })),
+              { text: SCHOOL, alignment: 'center' },
+              { text: department, alignment: 'center', decoration: 'underline' },
             ],
           },
           {
-            width: '42%',
+            width: '60%',
             stack: [
-              labelled('Mã số sinh viên:', values.studentId),
-              labelled('SĐT:', values.phone),
-              labelled('Niên khóa:', values.cohort),
+              {
+                text: 'CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM',
+                bold: true,
+                fontSize: SMALL_FONT_SIZE,
+                alignment: 'center',
+              },
+              {
+                text: 'Độc lập - Tự do - Hạnh phúc',
+                bold: true,
+                alignment: 'center',
+                decoration: 'underline',
+                margin: [0, 1, 0, 0],
+              },
+              {
+                text: `${nfc(values.city)}, ${formatVietnameseDate(values.date)}`,
+                italics: true,
+                alignment: 'center',
+                margin: [0, 8, 0, 0],
+              },
             ],
           },
         ],
-        margin: [0, 0, 0, 10],
+        margin: [0, 0, 0, 4],
       },
 
       {
-        text: `Hiện em đang làm khóa luận tốt nghiệp dưới sự hướng dẫn của ${nfc(
-          supervisorFullLabel(values.supervisor),
-        )}.`,
-        alignment: 'justify',
-        margin: [0, 0, 0, 6],
+        text: 'ĐƠN XIN SỬ DỤNG THIẾT BỊ',
+        bold: true,
+        fontSize: 16,
+        alignment: 'center',
+        margin: [0, 16, 0, 14],
       },
+
+      // Nhãn "Kính gửi:" chiếm đúng bề rộng chữ của nó, phần còn lại là một
+      // cột riêng. Nhờ vậy tên giảng viên tự thẳng cột với tên bộ môn ở dòng
+      // trên mà không phải đo bề rộng chữ rồi thụt lề bằng con số cứng.
+      {
+        columns: [
+          { width: 'auto', text: 'Kính gửi:', bold: true },
+          {
+            width: '*',
+            stack: [{ text: department }, { text: supervisor }],
+          },
+        ],
+        columnGap: 4,
+        margin: [0, 0, 0, 10],
+      },
+
+      labelled('Em tên là:', values.studentName),
+      labelled('Mail:', values.email),
+      labelled('Lớp:', values.className),
+      labelled('Mã số sinh viên:', values.studentId),
+      labelled('Số điện thoại:', values.phone),
+      labelled('Niên khóa:', values.cohort, 10),
+
       {
         text:
+          `Hiện em đang làm khóa luận tốt nghiệp dưới sự hướng dẫn của ${supervisor}. ` +
           `Nay em làm đơn này kính mong Bộ môn cho phép em được mượn và sử dụng ` +
           `${EQUIPMENT} tại Bộ môn.`,
         alignment: 'justify',
-        margin: [0, 0, 0, 6],
+        margin: [0, 0, 0, 8],
       },
       {
         text: 'Các mẫu đo bao gồm:',
@@ -155,31 +217,33 @@ export function buildDocDefinition({ values, maHoSo }: PdfData): TDocumentDefini
           headerRows: 1,
           keepWithHeaderRows: 1,
           dontBreakRows: true,
-          widths: ['8%', '52%', '18%', '22%'],
+          widths: ['8%', '34%', '24%', '34%'],
           body: [
             [
-              { text: 'STT', alignment: 'center' },
-              { text: 'TÊN MẪU', alignment: 'center' },
-              { text: 'TRẠNG THÁI MẪU', alignment: 'center' },
-              { text: 'DUNG MÔI CÓ THỂ HOÀ TAN', alignment: 'center' },
+              { text: 'STT', bold: true },
+              { text: 'Tên mẫu', bold: true },
+              { text: 'Trạng thái mẫu', bold: true },
+              { text: 'Dung môi có thể hòa tan', bold: true },
             ],
             ...samples.map((sample, index) => [
-              { text: String(index + 1), alignment: 'center' as const },
+              { text: String(index + 1) },
               { text: sample.name },
               { text: sample.state },
               { text: sample.solvent },
             ]),
           ],
         },
+        // Mọi ô đều căn giữa, kể cả tên mẫu do sinh viên nhập.
+        style: 'sampleCell',
         layout: {
           hLineWidth: () => 0.75,
           vLineWidth: () => 0.75,
           hLineColor: () => '#000000',
           vLineColor: () => '#000000',
-          paddingLeft: () => 4,
-          paddingRight: () => 4,
-          paddingTop: () => 4,
-          paddingBottom: () => 4,
+          paddingLeft: () => 6,
+          paddingRight: () => 6,
+          paddingTop: () => 5,
+          paddingBottom: () => 5,
         },
         margin: [0, 0, 0, 10],
       },
@@ -189,62 +253,31 @@ export function buildDocDefinition({ values, maHoSo }: PdfData): TDocumentDefini
           'Em xin cam kết, trong thời gian sử dụng thiết bị, em sẽ tuân thủ sự ' +
           'sắp xếp và hướng dẫn của các cán bộ, giảng viên phụ trách.',
         alignment: 'justify',
-        margin: [0, 0, 0, 6],
+        margin: [0, 0, 0, 8],
       },
       {
         text: 'Em xin chân thành cảm ơn.',
-        margin: [0, 0, 0, 10],
+        margin: [0, 0, 0, 12],
       },
 
-      // Ngày tháng, hai ô chữ ký và dòng xác nhận của bộ môn đi liền một
-      // khối. Nếu bảng mẫu dài làm tràn trang thì cả khối cùng sang trang
-      // mới, không để tiêu đề "Người làm đơn" ở cuối trang này còn chỗ ký
-      // rơi sang trang sau.
+      // Hai ô chữ ký đi liền một khối. Nếu bảng mẫu dài làm tràn trang thì cả
+      // khối cùng sang trang mới, không để tiêu đề "Người làm đơn" ở cuối
+      // trang này còn chỗ ký rơi sang trang sau.
       {
         unbreakable: true,
-        stack: [
-          {
-            text: `${nfc(values.city)}, ${formatVietnameseDate(values.date)}`,
-            alignment: 'right',
-            italics: true,
-            margin: [0, 0, 0, 4],
-          },
-          {
-            columns: [
-              {
-                width: '50%',
-                stack: [
-                  { text: 'Giảng viên hướng dẫn', bold: true, alignment: 'center' },
-                  {
-                    text: nfc(values.supervisor),
-                    alignment: 'center',
-                    margin: [0, SIGNATURE_SPACE, 0, 0],
-                  },
-                ],
-              },
-              {
-                width: '50%',
-                stack: [
-                  { text: 'Người làm đơn', bold: true, alignment: 'center' },
-                  {
-                    text: nfc(values.studentName),
-                    alignment: 'center',
-                    margin: [0, SIGNATURE_SPACE, 0, 0],
-                  },
-                ],
-              },
-            ],
-            margin: [0, 0, 0, 24],
-          },
-          {
-            text: 'Xác nhận của bộ môn',
-            bold: true,
-            alignment: 'center',
-            margin: [0, 0, 0, SIGNATURE_SPACE],
-          },
+        columns: [
+          signature('Giảng viên hướng dẫn', values.supervisor),
+          signature('Người làm đơn', values.studentName),
         ],
       },
     ],
+
+    styles: {
+      sampleCell: {
+        fontSize: TABLE_FONT_SIZE,
+        alignment: 'center',
+      },
+    },
   };
 }
 
