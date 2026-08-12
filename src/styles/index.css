@@ -4,9 +4,11 @@
 
    Bản thiết kế vẽ trên khung rộng 1040px. Trang này thì phần lớn sinh viên mở
    bằng điện thoại, nên mọi thứ ở đây viết theo lối hẹp trước — các quy tắc
-   `min-width` bên dưới mới dựng lại đúng bố cục của bản thiết kế. Hai chỗ cố ý
-   lệch khỏi bản vẽ, đều vì màn hình cảm ứng: ô nhập 16px (dưới ngưỡng đó iOS
-   tự phóng to cả trang lúc gõ) và nút cao 44px cho vừa đầu ngón tay.
+   `min-width` bên dưới mới dựng lại đúng bố cục của bản thiết kế. Chỗ cố ý
+   lệch khỏi bản vẽ, đều vì màn hình cảm ứng và vì đọc trên tay: nút cao 44px
+   cho vừa đầu ngón tay, ô nhập không bao giờ xuống dưới 16px (dưới ngưỡng đó
+   iOS tự phóng to cả trang lúc gõ), và cả thang chữ nâng lên so với bản vẽ —
+   xem ghi chú ở --text-xs.
 
    Màu trong bản thiết kế viết bằng `color-mix()`; ở đây quy sẵn ra rgb() vì
    mọi phép trộn đều là một màu nền pha với trong suốt, kết quả không đổi mà
@@ -23,8 +25,8 @@
   --color-divider: rgb(32 31 29 / 16%);
   --color-line-strong: rgb(32 31 29 / 45%);
   --color-label: rgb(32 31 29 / 70%);
-  /* Bản thiết kế để 55%; đậm lên 65% để chữ 11px vẫn đạt tỉ lệ tương phản
-     4,5:1 trên nền giấy. Xem ghi chú màu chữ ở --color-accent-700. */
+  /* Bản thiết kế để 55%; đậm lên 65% để bậc chữ nhỏ nhất vẫn đạt tỉ lệ tương
+     phản 4,5:1 trên nền giấy. Xem ghi chú màu chữ ở --color-accent-700. */
   --color-muted: rgb(32 31 29 / 65%);
   --color-faint: rgb(32 31 29 / 7%);
   --color-faintest: rgb(32 31 29 / 4%);
@@ -59,6 +61,19 @@
   --font-heading-weight: 600;
   --font-body: 'Lora', Georgia, 'Times New Roman', serif;
 
+  /* Bậc cỡ chữ. Bản thiết kế vẽ trên màn hình rộng, nhìn gần, nên xuống tới
+     11px vẫn đọc được; trang này thì phần lớn sinh viên mở bằng điện thoại
+     cầm xa tay, lại còn dấu tiếng Việt chồng trên đầu chữ — cỡ đó bắt nheo
+     mắt. Cả thang nâng lên khoảng hai điểm, giữ nguyên khoảng cách giữa các
+     bậc để trật tự lớn nhỏ của bản vẽ không đổi.
+
+     Lora vẽ chữ thường cao hơn hẳn Cormorant Garamond, nên cùng một số px
+     trông đã to hơn — phần tiêu đề vì thế nâng nhiều hơn phần chữ chạy. */
+  --text-xs: 13px; /* ghi chú dưới ô nhập, đầu cột bảng */
+  --text-sm: 14px; /* nhãn ô nhập, chữ phụ */
+  --text-md: 15px; /* vạch tiến độ */
+  --text-lg: 16px; /* chữ chạy: băng thông báo, bảng, bản tóm tắt */
+
   /* ---------- Khoảng cách ---------- */
   --space-1: 4.6px;
   --space-2: 9.2px;
@@ -74,14 +89,16 @@
   --shadow-sm: 0 1px 2px rgb(45 43 43 / 14%);
 
   /* Cỡ chữ và chiều cao của ô nhập, nút bấm. Giá trị mặc định là của điện
-     thoại; bản thiết kế (14px / 36px) chỉ áp dụng từ màn hình rộng trở lên. */
-  --control-font: 16px;
+     thoại; từ màn hình rộng trở lên mới co lại. Bản thiết kế để 14px/36px,
+     nhưng chữ đã gõ vào ô là chỗ người ta soi kỹ nhất trước lúc gửi đơn nên
+     cả hai bậc đều nâng lên theo thang chữ mới. */
+  --control-font: 17px;
   --control-min-height: 44px;
 
   color-scheme: light;
   font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 17px;
+  line-height: 1.6;
   color: var(--color-text);
   background: var(--color-page);
 
@@ -91,8 +108,8 @@
 
 @media (min-width: 640px) {
   :root {
-    --control-font: 14px;
-    --control-min-height: 36px;
+    --control-font: 16px;
+    --control-min-height: 40px;
   }
 }
 
@@ -202,17 +219,17 @@ button {
 
 .sheet-head h1 {
   margin-right: auto;
-  font-size: 21px;
+  font-size: 24px;
 }
 
 @media (min-width: 640px) {
   .sheet-head h1 {
-    font-size: 24px;
+    font-size: 28px;
   }
 }
 
 .sheet-meta {
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--color-neutral-700);
   font-feature-settings: 'tnum';
   overflow-wrap: anywhere;
@@ -255,7 +272,7 @@ button {
 .progress-label {
   font-family: var(--font-heading);
   font-variant-numeric: lining-nums tabular-nums;
-  font-size: 13px;
+  font-size: var(--text-md);
   color: var(--color-accent-700);
 }
 
@@ -277,18 +294,18 @@ button {
 }
 
 .section-head h2 {
-  font-size: 22px;
+  font-size: 25px;
 }
 
 @media (min-width: 640px) {
   .section-head h2 {
-    font-size: 25px;
+    font-size: 29px;
   }
 }
 
 .section-count {
   margin-top: var(--space-1);
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--color-neutral-700);
   font-feature-settings: 'tnum';
 }
@@ -324,13 +341,14 @@ button {
 .field > .field-label {
   display: block;
   margin-bottom: 5px;
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--color-label);
 }
 
 /* Ba ô giảng viên: bản thiết kế xếp 90px / 130px / phần còn lại trên một
-   dòng. Chỗ đó chỉ đủ khi ô nhập đã co về 14px, nên dưới 640px hai ô chọn
-   chia đôi dòng trên và ô tên chiếm trọn dòng dưới. */
+   dòng. Chỗ đó chỉ đủ khi ô nhập đã co lại, nên dưới 640px hai ô chọn chia
+   đôi dòng trên và ô tên chiếm trọn dòng dưới. Hai cột nới thêm một chút so
+   với bản vẽ để "PGS. TS." ở cỡ chữ mới không bị mũi tên của ô chọn cắt. */
 .supervisor-parts {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -343,7 +361,7 @@ button {
 
 @media (min-width: 640px) {
   .supervisor-parts {
-    grid-template-columns: 90px 130px 1fr;
+    grid-template-columns: 100px 145px 1fr;
   }
 
   .supervisor-parts input {
@@ -407,7 +425,7 @@ button {
 .field-hint {
   display: block;
   margin-top: 5px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   line-height: 1.45;
 }
 
@@ -469,7 +487,7 @@ button {
 .btn-ghost {
   min-height: 0;
   padding: var(--space-1) var(--space-2);
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--color-accent-700);
 }
 
@@ -519,7 +537,7 @@ button {
   margin-bottom: var(--space-6);
   border: 1px solid;
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: var(--text-lg);
   line-height: 1.5;
 }
 
@@ -612,7 +630,7 @@ button {
 
 .sample-index {
   font-family: var(--font-heading);
-  font-size: 20px;
+  font-size: 23px;
   font-variant-numeric: lining-nums tabular-nums;
   color: var(--color-accent);
 }
@@ -653,19 +671,19 @@ button {
 }
 
 .summary-list dt {
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--color-neutral-700);
 }
 
 .summary-list dd {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--text-lg);
   overflow-wrap: anywhere;
 }
 
 .summary-subhead {
   margin: var(--space-6) 0 var(--space-2);
-  font-size: 11px;
+  font-size: var(--text-xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-neutral-700);
@@ -681,7 +699,7 @@ button {
   width: 100%;
   min-width: 460px;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: var(--text-lg);
 }
 
 .table th {
@@ -690,7 +708,7 @@ button {
   text-align: left;
   font-family: var(--font-body);
   font-weight: 400;
-  font-size: 11px;
+  font-size: var(--text-xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-muted);
@@ -721,7 +739,7 @@ button {
 
 .next-step {
   margin-bottom: var(--space-4);
-  font-size: 14px;
+  font-size: var(--text-lg);
   max-width: 52ch;
   text-wrap: pretty;
 }
@@ -730,7 +748,7 @@ button {
 
 .disclosure {
   padding-left: 0;
-  font-size: 14px;
+  font-size: var(--text-lg);
 }
 
 .disclosure-body {
