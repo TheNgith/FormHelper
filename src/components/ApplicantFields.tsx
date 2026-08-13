@@ -127,7 +127,7 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
             aria-invalid={errors.supervisorName ? 'true' : undefined}
             aria-describedby={supervisorError ? 'supervisor-error' : undefined}
             autoComplete="off"
-            placeholder="Trần Văn Thành"
+            placeholder="Nguyễn Văn A"
           />
         </div>
         {supervisorError && (
@@ -144,7 +144,7 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
         value={values.studentName}
         error={errors.studentName}
         autoComplete="name"
-        placeholder="Nguyễn Thị Ngọc Ánh"
+        placeholder="Trần Ngọc B"
         onChange={(v) => onChange({ studentName: v })}
       />
       <TextField
@@ -154,7 +154,7 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
         error={errors.studentId}
         inputMode="numeric"
         autoComplete="off"
-        placeholder="2200123"
+        placeholder="000000"
         onChange={(v) => onChange({ studentId: v })}
       />
       <TextField
@@ -165,7 +165,7 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
         type="tel"
         inputMode="tel"
         autoComplete="tel"
-        placeholder="0912345678"
+        placeholder="0987654321"
         onChange={(v) => onChange({ phone: v })}
       />
       {/* Ô này từng bị khóa vì giá trị đến từ token đăng nhập. Không còn
@@ -183,7 +183,7 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
         type="email"
         inputMode="email"
         autoComplete="email"
-        placeholder="ngocanh@ump.edu.vn"
+        placeholder="example@ump.edu.vn"
         onChange={(v) => onChange({ email: v })}
       />
       <TextField
@@ -192,7 +192,7 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
         value={values.className}
         error={errors.className}
         autoComplete="off"
-        placeholder="D2A"
+        placeholder="D22"
         onChange={(v) => onChange({ className: v })}
       />
       <TextField
@@ -201,7 +201,7 @@ export default function ApplicantFields({ values, errors, onChange }: Props) {
         value={values.cohort}
         error={errors.cohort}
         autoComplete="off"
-        placeholder="2022 - 2026"
+        placeholder="2022 - 2027"
         onChange={(v) => onChange({ cohort: v })}
       />
 

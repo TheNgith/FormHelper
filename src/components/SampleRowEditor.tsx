@@ -98,7 +98,7 @@ export default function SampleRowEditor({
             aria-invalid={nameError ? 'true' : undefined}
             aria-describedby={nameError ? `${nameId}-error` : undefined}
             autoComplete="off"
-            placeholder="Ví dụ: HHVL DAP - HPMC"
+            placeholder="Ví dụ: HHC UMP 01 - ABCD"
           />
           {nameError && (
             <span className="field-error" id={`${nameId}-error`}>
