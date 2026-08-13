@@ -45,8 +45,54 @@ const TABLE_FONT_SIZE = 12.5;
 const MARGIN = 57;
 const MARGIN_LEFT = 85;
 
-/** Khoảng trống chừa cho chữ ký tay. */
-const SIGNATURE_SPACE = 34;
+/**
+ * Khoảng trống chừa cho chữ ký tay: khoảng 2,5 cm, đủ rộng để ký thoải mái mà
+ * nét chữ không chạm vào dòng tên in sẵn ở dưới.
+ */
+const SIGNATURE_SPACE = 70;
+
+/**
+ * Nét kẻ ngắn dưới tên đơn vị và dưới dòng "Độc lập - Tự do - Hạnh phúc".
+ * Đây là một đường kẻ riêng chứ không phải gạch chân: ngắn hơn dòng chữ và
+ * cách chữ một quãng.
+ */
+const RULE_RATIO = 0.85;
+const RULE_GAP = 3.5;
+const RULE_THICKNESS = 0.75;
+
+/**
+ * Bề rộng chữ đo sẵn bằng chính phông Libertinus Bold ở đúng cỡ đang in, vì
+ * lúc dựng doc definition thì pdfmake chưa nạp phông nên không đo được. Sửa
+ * chữ hoặc cỡ chữ hai dòng này thì đo lại, không thì nét kẻ sẽ lệch tỉ lệ.
+ */
+const SCHOOL_TEXT_WIDTH = 76.2;
+const MOTTO_TEXT_WIDTH = 165.4;
+
+/**
+ * Nét kẻ nằm giữa cột. Hai cột sao ở hai bên đẩy nét kẻ vào chính giữa mà
+ * không cần biết cột rộng bao nhiêu; chúng cũng là canvas rỗng nên không kéo
+ * theo chiều cao một dòng chữ như ô chữ trống.
+ *
+ * Cả khối chỉ chiếm đúng `RULE_GAP` chiều cao — canvas một nét ngang cao 0 pt.
+ * Phần nội dung ngay sau nét kẻ vì thế phải tự chừa lề trên cho mình.
+ */
+function rule(textWidth: number): Content {
+  const width = textWidth * RULE_RATIO;
+  return {
+    columns: [
+      { width: '*', canvas: [] },
+      {
+        width,
+        canvas: [
+          { type: 'line', x1: 0, y1: 0, x2: width, y2: 0, lineWidth: RULE_THICKNESS },
+        ],
+      },
+      { width: '*', canvas: [] },
+    ],
+    columnGap: 0,
+    margin: [0, RULE_GAP, 0, 0],
+  };
+}
 
 export type PdfData = {
   values: FormValues;
@@ -131,14 +177,16 @@ export function buildDocDefinition({ values, maHoSo }: PdfData): TDocumentDefini
           {
             width: '40%',
             stack: [
+              // Tên đại học chỉ là cơ quan chủ quản nên để chữ thường; đơn vị
+              // ban hành là Trường Dược mới in đậm và gạch chân, giống cách
+              // cột phải nhấn dòng "Độc lập - Tự do - Hạnh phúc".
               ...LETTERHEAD.map((line) => ({
                 text: line,
-                bold: true,
                 fontSize: SMALL_FONT_SIZE,
                 alignment: 'center' as const,
               })),
-              { text: SCHOOL, alignment: 'center' },
-              { text: department, alignment: 'center', decoration: 'underline' },
+              { text: SCHOOL, bold: true, alignment: 'center' },
+              rule(SCHOOL_TEXT_WIDTH),
             ],
           },
           {
@@ -154,9 +202,9 @@ export function buildDocDefinition({ values, maHoSo }: PdfData): TDocumentDefini
                 text: 'Độc lập - Tự do - Hạnh phúc',
                 bold: true,
                 alignment: 'center',
-                decoration: 'underline',
                 margin: [0, 1, 0, 0],
               },
+              rule(MOTTO_TEXT_WIDTH),
               {
                 text: `${nfc(values.city)}, ${formatVietnameseDate(values.date)}`,
                 italics: true,
