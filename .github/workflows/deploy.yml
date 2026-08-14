@@ -45,11 +45,21 @@ jobs:
           # reCAPTCHA cũng vậy — nó phải nằm trong trang thì reCAPTCHA mới
           # chạy được. Xem mục "Bảo mật" trong README.
           VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          # Chỉ trang quản trị dùng tới, nhưng vẫn phải có mặt lúc build: đây
+          # là biến của Vite, thay thẳng vào mã nguồn chứ không đọc lúc chạy.
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
           VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
           VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
           VITE_RECAPTCHA_SITE_KEY: ${{ vars.VITE_RECAPTCHA_SITE_KEY }}
+
+      # Trang quản trị kéo theo Firebase Auth và Recharts. Cả hai điểm vào dùng
+      # chung src/lib/firebase.ts, nên một lệnh import đặt nhầm chỗ là chúng đi
+      # thẳng vào gói của sinh viên — và kiểu hỏng đó hoàn toàn im lặng: trang
+      # vẫn chạy, bài kiểm tra vẫn xanh, chỉ có bản build nặng thêm vài trăm KB.
+      # Phải đo trên sản phẩm đã dựng, nên bước này đứng sau `npm run build`.
+      - run: npm run check:bundle
 
       # Bí mật thật sự duy nhất của dự án, và nó không bao giờ tới trình duyệt.
       #

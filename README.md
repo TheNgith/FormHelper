@@ -3,7 +3,7 @@
 Trang web giúp sinh viên điền và in đơn xin mượn **máy quang phổ hồng ngoại
 (FT-IR)** của Bộ môn Hóa Hữu Cơ, đồng thời lưu mỗi lần nộp vào Firestore.
 
-**Không có đăng nhập.** Sinh viên mở trang là điền được ngay. Luồng sử dụng
+**Sinh viên không phải đăng nhập.** Mở trang là điền được ngay. Luồng sử dụng
 gồm ba màn hình:
 
 1. **Điền đơn** — thông tin sinh viên và danh sách mẫu đo (thêm, xóa, nhân
@@ -15,9 +15,9 @@ gồm ba màn hình:
 Không có gì được ghi vào cơ sở dữ liệu cho tới khi bấm **Xác nhận và gửi**, và
 file PDF chỉ được dựng khi bấm **Tải PDF**.
 
-Bộ môn lấy dữ liệu bằng `npm run export:csv`, chạy tại máy — xem
-[Lấy dữ liệu về](#lấy-dữ-liệu-về). Không còn trang quản trị: sau lần thay đổi
-này **không trình duyệt nào đọc được gì từ cơ sở dữ liệu.**
+Bộ môn xem dữ liệu ở **trang quản trị** `/ir-form/dashboard/` — đăng nhập
+Google, giới hạn trong hai địa chỉ — hoặc lấy về bằng `npm run export:csv` chạy
+tại máy. Xem [Lấy dữ liệu về](#lấy-dữ-liệu-về).
 
 ## Yêu cầu
 
@@ -38,7 +38,14 @@ npm run dev           # cửa sổ 2
 
 Trang dev nằm ở **http://localhost:5173/ir-form/**, không phải ở gốc: `base`
 là đường dẫn tuyệt đối, đúng bằng chỗ ứng dụng chạy thật. Vite in sẵn địa chỉ
-đầy đủ khi khởi động.
+đầy đủ khi khởi động. Trang quản trị ở
+**http://localhost:5173/ir-form/dashboard/** — một điểm vào riêng của Vite, xem
+`rollupOptions.input` trong [vite.config.ts](vite.config.ts).
+
+Emulator Auth cho đăng nhập bằng **bất kỳ địa chỉ nào** gõ vào cửa sổ đăng
+nhập, nên thử được cả hai phía của danh sách trắng: một địa chỉ trong
+[src/lib/admins.ts](src/lib/admins.ts) thì vào được, một địa chỉ bất kỳ thì
+nhận màn hình "not authorised".
 
 Emulator **bỏ qua App Check hoàn toàn**, và bản dev cũng không khởi tạo App
 Check. Nghĩa là chạy tại máy không bao giờ chạm tới nửa kia của ranh giới bảo
@@ -52,11 +59,12 @@ phải gửi đơn thật. Khối này bị loại hẳn khỏi bản build.
 | Lệnh | Việc |
 | --- | --- |
 | `npm run dev` | Chạy máy chủ phát triển |
-| `npm run emulators` | Chạy Firestore emulator cho bản dev |
+| `npm run emulators` | Chạy emulator Firestore **và** Auth cho bản dev |
 | `npm run build` | Dựng bản phát hành vào `dist/` |
 | `npm run preview` | Xem thử bản đã dựng |
 | `npm test` | Chạy toàn bộ bài kiểm tra, kể cả `firestore.rules` |
 | `npm run test:rules` | Chỉ chạy bài kiểm tra `firestore.rules` |
+| `npm run check:bundle` | Canh gói của sinh viên không lẫn thư viện của trang quản trị (chạy sau `build`) |
 | `npm run export:csv` | Xuất mọi đơn đã nộp ra CSV (cần service account) |
 | `npm run deploy:rules` | Đẩy riêng `firestore.rules` lên dự án thật |
 | `npm run lint` | Kiểm tra mã nguồn |
@@ -71,16 +79,55 @@ npx tsx scripts/check-pagination.ts   # đếm số trang theo số lượng m�
 ## Bảo mật — đọc trước khi sửa `firestore.rules`
 
 **Trình duyệt nói chuyện thẳng với Firestore.** Không còn máy chủ nào của
-chúng ta đứng giữa, và cũng không còn đăng nhập. Hệ quả trực tiếp: `formSchema`
-trong [src/lib/schema.ts](src/lib/schema.ts) chạy hoàn toàn trên máy người
-dùng, nên nó giúp người điền đơn nhận ra lỗi chứ **không ngăn được ai**.
+chúng ta đứng giữa. Hệ quả trực tiếp: `formSchema` trong
+[src/lib/schema.ts](src/lib/schema.ts) chạy hoàn toàn trên máy người dùng, nên
+nó giúp người điền đơn nhận ra lỗi chứ **không ngăn được ai**.
 
 Còn đúng hai lớp, và chúng canh hai thứ khác nhau:
 
 | Lớp | Chặn được | Không chặn được |
 | --- | --- | --- |
 | **App Check** (reCAPTCHA Enterprise) | script, bot, curl, trang khác gọi vào | một người thật ngồi trên đúng trang này |
-| **[firestore.rules](firestore.rules)** | sai hình dạng, thừa khóa, ô quá dài, quá 60 mẫu, **mọi lượt đọc**, mọi lượt sửa, mọi lượt xóa, mọi bộ sưu tập khác | một lời khai hợp lệ nhưng sai sự thật |
+| **[firestore.rules](firestore.rules)** | sai hình dạng, thừa khóa, ô quá dài, quá 60 mẫu, **mọi lượt đọc của người ngoài danh sách trắng**, mọi lượt sửa, mọi bộ sưu tập khác | một lời khai hợp lệ nhưng sai sự thật |
+
+### Đường ghi không có danh tính, đường đọc thì có
+
+Hai đường đi hai kiểu, và trộn lẫn chúng là hiểu sai cả thiết kế:
+
+- **Ghi** — sinh viên nộp đơn, không đăng nhập. `allow create` không biết ai
+  đang gọi; nó chỉ biết hình dạng của thứ được ghi.
+- **Đọc và xóa** — chỉ trang quản trị `/ir-form/dashboard/`, sau một lượt đăng
+  nhập Google, và chỉ hai địa chỉ trong `isAdmin()` của
+  [firestore.rules](firestore.rules).
+
+Quyền đọc từng bị đóng hẳn bằng `allow read: if false`, với lý do: *không có
+danh tính nên mở một đường đọc cho trình duyệt là mở cho cả Internet, và người
+lạ dò ID tài liệu sẽ gom được tên, mã số sinh viên, số điện thoại.* Lập luận ấy
+đúng, và nó **có điều kiện** — nó đứng trên vế "không có danh tính". Trang quản
+trị cấp một danh tính, nên vế ấy không còn, và quyền đọc mở lại đúng bằng cái
+danh tính đó chứ không rộng hơn. Sinh viên vẫn không đọc được gì; bài kiểm tra
+đầu tiên trong mục "quyền đọc" của
+[firestore.rules.test.ts](firestore.rules.test.ts) canh đúng điều đó.
+
+Ba điểm đáng nhớ về cách sắp xếp này:
+
+1. **Danh sách trong [src/lib/admins.ts](src/lib/admins.ts) không phải cái
+   cổng.** Ai có tài khoản Google cũng đăng nhập xong được; danh sách ấy chỉ
+   chọn màn hình để vẽ. Thứ từ chối một tài khoản lạ là `isAdmin()` trong
+   rules. Đừng bao giờ để một quyết định thật sự nào dựa vào bản chép phía
+   trình duyệt.
+2. **Địa chỉ không công bố không phải lớp bảo vệ.** Không có gì trỏ tới
+   `/ir-form/dashboard/` và nó mang `noindex`, nhưng đó là để sinh viên không
+   thấy một cánh cửa họ không mở được — không phải để giấu.
+3. **Thêm người thứ ba là sửa hai nơi rồi `npm run deploy:rules`.** Không có bộ
+   sưu tập admin, không có custom claims. Ở mức hai người thì đó là đánh đổi
+   đúng; quanh mức năm người thì chuyển sang custom claims, đừng kéo dài danh
+   sách. Hai bản chép lệch nhau thì triệu chứng rất êm — một người quản trị
+   lặng lẽ không đọc được gì — nên `firestore.rules.test.ts` đọc thẳng tệp
+   rules ra để so.
+
+Trang quản trị **không sửa** đơn nào: `allow update` vẫn đóng. Nó xóa được, và
+việc xóa là không hoàn lại — xem [Lấy dữ liệu về](#lấy-dữ-liệu-về).
 
 Điều quan trọng nhất phải hiểu về App Check: nó trả lời câu **"yêu cầu này có
 đến từ ứng dụng của mình, chạy trên tên miền của mình không"**, chứ không phải
@@ -108,17 +155,22 @@ màn hình đăng nhập do thư mục ta không kiểm soát — đúng thứ �
 kế hoạch trước.
 
 Đánh đổi đó chấp nhận được cho ứng dụng này. Một lá đơn giả tốn của bộ môn một
-suất máy, phát hiện ra ngay lúc sinh viên không đến. Nó không phải một vụ lộ
-dữ liệu, vì sau thay đổi này **không trình duyệt nào đọc được gì.**
+suất máy, phát hiện ra ngay lúc sinh viên không đến — nó không phải một vụ lộ
+dữ liệu.
 
 ### Những gì thiết kế này *không* chữa
 
-- **Không có giới hạn tần suất.** Không có danh tính thì không viết được trong
-  rules. App Check làm việc nhồi tự động trở nên khó, không phải bất khả, và
-  không làm gì được một người bấm gửi 200 lần. Cảnh báo ngân sách Firestore là
-  cách *phát hiện*, không phải cách ngăn.
-- **Dấu vết mỏng đi.** Không còn `uid`, không còn email đã xác thực. Một lá
-  đơn nay chỉ mang những gì ai đó gõ vào, cộng một dấu thời gian của máy chủ.
+- **Không có giới hạn tần suất.** Đường ghi không có danh tính nên không viết
+  được trong rules. App Check làm việc nhồi tự động trở nên khó, không phải
+  bất khả, và không làm gì được một người bấm gửi 200 lần. Cảnh báo ngân sách
+  Firestore là cách *phát hiện*, không phải cách ngăn.
+- **Dấu vết mỏng đi.** Đơn không mang `uid`, không mang email đã xác thực. Một
+  lá đơn chỉ có những gì ai đó gõ vào, cộng một dấu thời gian của máy chủ.
+  Trang quản trị không đổi điều này: danh tính ở đó thuộc về *người đọc*, không
+  phải người nộp.
+- **Xóa là xóa hẳn.** Trang quản trị xóa được nhiều đơn một lúc, và không có
+  trường xóa mềm, không có bản sao lưu, không có nút hoàn tác. Hộp thoại xác
+  nhận là toàn bộ lớp chắn.
 - **Tên giảng viên hướng dẫn cũng chỉ là lời khai.** Ô này từng là danh sách
   đóng gồm đúng một người; nay sinh viên tự gõ, vì mỗi khóa luận một người
   hướng dẫn khác và sửa mã nguồn cho từng người là không kham nổi. Không gì
@@ -133,10 +185,12 @@ dữ liệu, vì sau thay đổi này **không trình duyệt nào đọc đư�
   hỏng".
 
 Nếu chỗ nào trong danh sách trên thành vấn đề thật, lối thoát nhỏ nhất là
-**đăng nhập ẩn danh**: `signInAnonymously()` chạy vô hình lúc mở trang, không
-sinh viên nào thấy màn hình đăng nhập, mà `request.auth.uid` thì quay lại —
-đủ để mở lại quyền đọc theo người gửi và để chặn theo tần suất từng uid. Nó
-không đòi đổi mô hình dữ liệu.
+**đăng nhập ẩn danh cho trang nộp đơn**: `signInAnonymously()` chạy vô hình lúc
+mở trang, không sinh viên nào thấy màn hình đăng nhập, mà `request.auth.uid`
+thì có mặt — đủ để chặn theo tần suất từng uid. Nó không đòi đổi mô hình dữ
+liệu. (Firebase Auth nay đã có sẵn trong dự án cho trang quản trị, nhưng đừng
+vì thế mà import nó vào gói của sinh viên trước khi thật sự cần — xem
+`npm run check:bundle`.)
 
 ### Cấu hình web của Firebase không phải bí mật
 
@@ -151,11 +205,20 @@ tệp JSON mà `npm run export:csv` dùng tại máy. Không cái nào tới tr�
 
 ### Rules có bài kiểm tra riêng
 
-[firestore.rules.test.ts](firestore.rules.test.ts) chạy trên emulator qua
-`@firebase/rules-unit-testing`, phủ 23 trường hợp: đơn hợp lệ ghi được, ID tài
-liệu sai dạng, `createdAt` lấy từ đồng hồ máy khách, 0 / 60 / 61 mẫu, thiếu
-trường, thừa trường, trường `uid` của bản cũ, ghi lần hai, sửa, xóa, đọc lại
-đơn vừa ghi, liệt kê bộ sưu tập, và các bộ sưu tập khác.
+[firestore.rules.test.ts](firestore.rules.test.ts) chạy trên emulator Firestore
+*và* emulator Auth qua `@firebase/rules-unit-testing`, phủ 34 trường hợp.
+
+Về đường ghi: đơn hợp lệ ghi được, ID tài liệu sai dạng, `createdAt` lấy từ
+đồng hồ máy khách, 0 / 60 / 61 mẫu, thiếu trường, thừa trường, trường `uid` của
+bản cũ, ghi lần hai, sửa, xóa.
+
+Về đường đọc — phần thêm cùng trang quản trị: máy khách chưa đăng nhập không
+đọc và không liệt kê được; một tài khoản Google **ngoài** danh sách trắng cũng
+không, kể cả khi nó đã đăng nhập trót lọt; đúng địa chỉ nhưng `email_verified`
+sai thì cũng không; cả hai địa chỉ trong danh sách trắng thì `get`, `list` và
+`delete` được, còn `update` thì vẫn không; và một người quản trị cũng không ghi
+nổi một tài liệu sai hình dạng. Cộng một bài đọc thẳng tệp rules ra để so danh
+sách trắng với [src/lib/admins.ts](src/lib/admins.ts).
 
 Bộ này chạy trong `npm test` và trong CI. **Nó không nói gì về App Check** —
 xem đầu tệp.
@@ -189,9 +252,10 @@ quét bảng dò trùng như bản cũ. Dạng của ID nay do rules ép: hồi 
 thì ID coi như đáng tin vì chỉ sinh viên đã xác thực mới ghi được, còn nay thì
 ai cũng tự đặt được.
 
-Đơn nộp thời còn đăng nhập vẫn giữ trường `uid` của chúng. Không di trú:
-không trình duyệt nào đọc chúng nữa, script xuất CSV bỏ qua khóa lạ, và
-Firebase console vẫn xem được.
+Đơn nộp thời sinh viên còn đăng nhập vẫn giữ trường `uid` của chúng. Không di
+trú: script xuất CSV bỏ qua khóa lạ, và trang quản trị cũng vậy — nó đọc từng
+ô nó cần chứ không đòi tài liệu đúng hình dạng, nên một đơn cũ vẫn hiện ra
+nguyên vẹn trong bảng thay vì biến mất.
 
 ### Bẫy gửi lại
 
@@ -222,8 +286,51 @@ mạng rồi lần sau bị App Check từ chối thì ứng dụng báo thành 
 
 ## Lấy dữ liệu về
 
-Không còn trang quản trị. Cách duy nhất đọc dữ liệu là
-[scripts/export-csv.ts](scripts/export-csv.ts), chạy tại máy người phụ trách:
+Hai đường, và chúng phục vụ hai việc khác nhau.
+
+### Trang quản trị — xem, tra cứu, xóa
+
+`/ir-form/dashboard/`, đăng nhập bằng Google. Không có gì trỏ tới nó và nó mang
+`noindex`; muốn vào thì gõ thẳng địa chỉ. Chỉ hai địa chỉ trong
+[src/lib/admins.ts](src/lib/admins.ts) mở được — xem
+[Bảo mật](#bảo-mật--đọc-trước-khi-sửa-firestorerules) để hiểu vì sao danh sách
+ấy chỉ là giao diện còn cái cổng nằm trong rules.
+
+Ba tab:
+
+| Tab | Việc |
+| --- | --- |
+| **Overview** | Bốn biểu đồ theo năm: số đơn từng tháng, trạng thái mẫu, xếp hạng lớp, tần suất giảng viên |
+| **Records** | Toàn bộ đơn — sắp mới/cũ, lọc theo năm và tháng, mở từng dòng xem danh sách mẫu, xóa theo ô chọn, nhập tay một đơn |
+| **Lookup** | Tra theo một phần họ tên, mã số sinh viên, lớp, email, giảng viên |
+
+Vài điều đáng biết trước khi dùng:
+
+- **Trang đọc cả bộ sưu tập đúng một lần lúc đăng nhập**, rồi mọi thao tác chạy
+  trong bộ nhớ. Firestore không so khớp chuỗi con ở bất kỳ mức chỉ mục nào, nên
+  tra cứu theo một phần tên *chỉ* làm được như vậy. Trần là 5000 đơn; chạm trần
+  thì có một băng cảnh báo, và phần bị cắt là những đơn **mới nhất** — lý do
+  nằm ở đầu [src/dashboard/lib/records.ts](src/dashboard/lib/records.ts).
+- **Xóa là xóa hẳn.** Không hoàn tác, không sao lưu. Muốn giữ một bản thì chạy
+  `npm run export:csv` trước.
+- **Không sửa được đơn nào** — cố ý, và `allow update` trong rules canh điều đó.
+- **Đơn nhập tay** đi qua đúng `formSchema` và đúng `allow create` mà sinh viên
+  đi, nên nó giống hệt một đơn thật về hình dạng. Mã hồ sơ sinh từ *ngày ghi
+  trên tờ đơn*, còn `createdAt` là lúc gõ vào — mọi biểu đồ và bộ lọc đọc
+  `requestDate` nên khác biệt đó không lộ ra ở đâu ngoài thứ tự sắp xếp.
+- **Biểu đồ giảng viên gộp Thầy/Cô về một người, nhưng không gộp học hàm học
+  vị**: `TS. X` và `PGS. TS. X` vẫn là hai cột. Cố ý — so khớp mờ theo tên có
+  ngày gộp nhầm hai người thật, và một cột thừa đọc ra được thì tốt hơn.
+
+Chạy thử tại máy thì cần cả emulator Auth (`npm run emulators` đã bật sẵn):
+emulator cho đăng nhập bằng bất kỳ địa chỉ nào gõ vào, nên thử được cả hai phía
+của danh sách trắng.
+
+### Xuất CSV — lấy một bản sao
+
+[scripts/export-csv.ts](scripts/export-csv.ts), chạy tại máy người phụ trách.
+Đây vẫn là cách duy nhất **mang dữ liệu ra khỏi** Firestore, và là thứ phải
+chạy trước khi xóa bất cứ gì:
 
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS=/duong/dan/toi/khoa.json
@@ -240,9 +347,10 @@ FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 npm run export:csv -- thu.csv
 
 Khóa lấy ở Firebase console → Project settings → Service accounts → *Generate
 new private key*. `firebase-admin` xác thực bằng service account nên nó đi
-vòng qua **cả rules lẫn App Check** — lòng tin nằm ở đúng một tệp JSON trên
-đúng một máy. Tệp đó không bao giờ được vào kho mã; `.gitignore` chặn sẵn cả
-nó lẫn các file `.csv` xuất ra.
+vòng qua **cả rules lẫn App Check** — kể cả danh sách trắng của trang quản trị,
+thứ nó không hề biết tới. Lòng tin nằm ở đúng một tệp JSON trên đúng một máy.
+Tệp đó không bao giờ được vào kho mã; `.gitignore` chặn sẵn cả nó lẫn các file
+`.csv` xuất ra.
 
 File CSV có BOM UTF-8 để Excel trên Windows mở bằng nhấp đúp không ra
 "Nguyá»…n", và ô được bọc nháy đúng RFC 4180 nên dấu phẩy trong tên mẫu được
@@ -266,11 +374,21 @@ Những bước dưới đây phải làm trên console, không tự động hó
 
 ### 1. Dự án Firebase
 
-1. Tạo dự án mới và bật **Firestore** ở chế độ production. Không cần
-   Authentication.
-2. Chép cấu hình web ở **Project settings → Your apps → Web** vào `.env`
+1. Tạo dự án mới và bật **Firestore** ở chế độ production.
+2. Bật **Authentication** — chỉ trang quản trị cần, và chỉ một nhà cung cấp:
+   - Sign-in method → bật **Google**.
+   - Settings → Authorized domains → thêm `ump.ngthinh.com`. Thiếu bước này
+     thì cửa sổ đăng nhập bị từ chối trên tên miền thật, trong khi chạy ở máy
+     vẫn tốt.
+3. Chép cấu hình web ở **Project settings → Your apps → Web** vào `.env`
    (xem [.env.example](.env.example)) và vào *Variables* của repo.
-3. Điền ID dự án vào [.firebaserc](.firebaserc), hoặc chạy
+   `VITE_FIREBASE_AUTH_DOMAIN` là ô mới và **chỉ trang quản trị dùng tới**:
+   cửa sổ đăng nhập mở `https://<authDomain>/__/auth/handler`, thiếu nó thì bấm
+   nút không thấy gì xảy ra.
+4. Sửa danh sách trong [src/lib/admins.ts](src/lib/admins.ts) *và* `isAdmin()`
+   trong [firestore.rules](firestore.rules) cho khớp địa chỉ của bộ môn. Hai
+   nơi, và `npm test` canh chúng khớp nhau.
+5. Điền ID dự án vào [.firebaserc](.firebaserc), hoặc chạy
    `npx firebase use --add`.
 
 ### 2. App Check với reCAPTCHA Enterprise
@@ -554,21 +672,39 @@ Mã hồ sơ được in nhỏ màu xám ở góc **dưới bên trái mọi tra
 ## Cấu trúc thư mục
 
 ```
+index.html               Điểm vào của trang nộp đơn
+dashboard/index.html     Điểm vào của trang quản trị (noindex)
 firestore.rules          Một nửa ranh giới bảo mật — đọc trước khi sửa
 firestore.rules.test.ts  Bài kiểm tra cho nó (App Check thì không có bài nào)
 public/fonts/            Phông Libertinus đã cắt gọn + giấy phép
 scripts/export-csv.ts    Xuất CSV tại máy bằng service account
 scripts/submissionRows.ts  Đọc tài liệu thành dòng + dựng CSV (có bài kiểm tra)
+scripts/check-bundle.ts  Canh gói sinh viên không lẫn firebase/auth và recharts
 scripts/                 Dựng phông, xem thử PDF, đếm số trang
-src/lib/firebase.ts      Khởi tạo Firebase và App Check, nối emulator khi dev
-src/lib/submissions.ts   Ghi đơn vào Firestore + bẫy gửi lại
-src/lib/maHoSo.ts        Sinh mã hồ sơ (dạng do firestore.rules ép)
-src/lib/schema.ts        Định nghĩa dữ liệu đơn — nguồn duy nhất
-src/lib/pdf/             Bố cục PDF và nạp phông
-src/lib/storage.ts       Bản nháp và thông tin cá nhân (localStorage)
-src/lib/session.ts       Đơn vừa gửi (sessionStorage)
+
+src/lib/                 Dùng chung cho cả hai trang
+  firebase.ts            Khởi tạo Firebase và App Check — **không import auth**
+  admins.ts              Danh sách trắng (bản chép của rules, không có thẩm quyền)
+  submissions.ts         Ghi đơn vào Firestore + bẫy gửi lại
+  maHoSo.ts              Sinh mã hồ sơ (dạng do firestore.rules ép)
+  schema.ts              Định nghĩa dữ liệu đơn — nguồn duy nhất
+  pdf/                   Bố cục PDF và nạp phông
+  storage.ts             Bản nháp và thông tin cá nhân (localStorage)
+  session.ts             Đơn vừa gửi (sessionStorage)
+
 src/screens/             Ba màn hình của sinh viên
-src/styles/index.css     Toàn bộ giao diện (hệ thiết kế "classical")
+
+src/dashboard/           Chỉ trang quản trị — không thứ gì ở đây vào gói sinh viên
+  Dashboard.tsx          Cổng đăng nhập + khung ba tab
+  lib/adminAuth.ts       Nơi *duy nhất* import firebase/auth
+  lib/records.ts         Đọc một lượt, sắp xếp, lọc, tra cứu (có bài kiểm tra)
+  lib/aggregate.ts       Bốn phép gộp của biểu đồ (có bài kiểm tra)
+  lib/mutations.ts       Xóa theo lô + nhập tay một đơn
+  tabs/, components/     Ba tab, bảng đơn dùng chung, biểu mẫu nhập tay
+  charts/                Recharts + bảng màu đã qua kiểm tra mù màu
+
+src/styles/index.css     Giao diện dùng chung (hệ thiết kế "classical")
+src/styles/dashboard.css Phần riêng của trang quản trị
 ```
 
 ## Thay đổi thường gặp
@@ -587,8 +723,20 @@ src/styles/index.css     Toàn bộ giao diện (hệ thiết kế "classical")
   trong [src/lib/pdf/fonts.ts](src/lib/pdf/fonts.ts), chạy lại script, rồi
   chạy `npm test`: bài kiểm tra bảng `cmap` sẽ chặn nếu phông mới thiếu chữ
   tiếng Việt.
+- **Thêm người vào trang quản trị** — sửa `ADMIN_EMAILS` trong
+  [src/lib/admins.ts](src/lib/admins.ts) **và** danh sách trong `isAdmin()` của
+  [firestore.rules](firestore.rules), rồi `npm run deploy:rules`. Hai nơi là cố
+  ý: rules không import được JavaScript. Quên nơi thứ hai thì người mới đăng
+  nhập được nhưng bảng dữ liệu trống trơn — `npm test` chặn trước khi tới đó.
+  Quanh mức năm người thì chuyển sang custom claims thay vì kéo dài danh sách.
 - **Thêm tên miền mới cho trang** — thêm vào khóa reCAPTCHA *trước* khi trỏ
-  tên miền, nếu không App Check chặn sạch mọi lá đơn từ đó.
+  tên miền, nếu không App Check chặn sạch mọi lá đơn từ đó. Nếu tên miền đó
+  phục vụ cả trang quản trị thì thêm nó vào **Authentication → Settings →
+  Authorized domains** nữa, không thì cửa sổ đăng nhập bị từ chối.
+- **Đổi màu biểu đồ** — sửa `src/dashboard/charts/theme.ts`, rồi chạy lại bộ
+  kiểm tra bảng màu của kỹ năng `dataviz` (lệnh nằm sẵn trong phần đầu tệp).
+  Ba màu hiện tại đã qua ngưỡng mù màu trên đúng nền giấy này; đổi bằng mắt là
+  bỏ mất điều đó.
 - **Đổi dạng mã hồ sơ** — sửa `MA_HO_SO_PATTERN` và `RANDOM_LENGTH` trong
   [src/lib/maHoSo.ts](src/lib/maHoSo.ts) *và* regex trong
   [firestore.rules](firestore.rules). Hai nơi là cố ý: rules không import được

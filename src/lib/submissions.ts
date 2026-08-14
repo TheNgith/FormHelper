@@ -64,8 +64,13 @@ export type SubmissionFields = Record<Exclude<SubmissionField, 'createdAt'>, unk
  * Chuẩn hóa NFC mọi chuỗi do người dùng gõ, đúng như bản cũ làm trước khi ghi
  * vào Google Sheet: bộ gõ tiếng Việt trên macOS cho ra dạng phân rã, và bản
  * PDF dựng lại từ dữ liệu này sẽ bị chồng dấu nếu không chuẩn hóa.
+ *
+ * Xuất ra ngoài vì trang quản trị nhập tay một đơn cũng đi qua đây. Đó là cả
+ * mục đích: một đơn nhập tay giống hệt một đơn sinh viên nộp về hình dạng, kể
+ * cả chuẩn hóa NFC, nên nó không thể trôi khỏi thứ mà firestore.rules chấp
+ * nhận. Một bản chép thứ hai của hàm này thì có thể.
  */
-function toDocument(values: FormValues, maHoSo: string): SubmissionFields {
+export function toDocument(values: FormValues, maHoSo: string): SubmissionFields {
   return {
     maHoSo,
     // Email nay do sinh viên tự gõ chứ không đến từ token nào. Vẫn chuẩn hóa
@@ -167,9 +172,12 @@ export type SubmitOptions = {
  * Chỗ suy luận này còn một khe hở, ghi ra cho sòng phẳng: nếu lần bấm đầu
  * hỏng vì mạng rồi lần sau bị App Check từ chối (token hết hạn, điểm
  * reCAPTCHA thấp), ứng dụng sẽ báo thành công cho một lá đơn chưa hề được
- * ghi. Không đọc lại được tài liệu thì không có cách nào phân biệt. Đổi lại
- * là không mở một đường đọc nào cho cả Internet — xem `allow read: if false`
- * trong firestore.rules.
+ * ghi. Không đọc lại được tài liệu thì không có cách nào phân biệt.
+ *
+ * Và trang nộp đơn *vẫn* không đọc lại được, kể cả sau khi trang quản trị mở
+ * lại `allow read`: quyền đọc ấy đòi một tài khoản trong danh sách trắng, thứ
+ * sinh viên không có. Đổi lại là không mở một đường đọc nào cho cả Internet —
+ * xem `isAdmin()` trong firestore.rules.
  */
 export async function submitForm(
   values: FormValues,

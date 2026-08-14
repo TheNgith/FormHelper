@@ -7,11 +7,17 @@
  * nó *phải* nằm trong trang thì reCAPTCHA mới chạy được; khóa secret đi thẳng
  * vào Firebase console và không bao giờ có mặt trong kho mã này.
  *
- * Ứng dụng không còn đăng nhập. Thứ đứng giữa Firestore và cả Internet nay là
- * App Check cộng với firestore.rules, và hai thứ đó trả lời hai câu hỏi khác
- * nhau: "yêu cầu này có đến từ trang web của mình không" và "nội dung này có
- * đúng hình dạng không". Không cái nào trả lời "người này là ai" — xem mục
- * "Bảo mật" trong README.
+ * Trang nộp đơn của sinh viên không có đăng nhập. Thứ đứng giữa Firestore và
+ * cả Internet ở đường *ghi* là App Check cộng với firestore.rules, và hai thứ
+ * đó trả lời hai câu hỏi khác nhau: "yêu cầu này có đến từ trang web của mình
+ * không" và "nội dung này có đúng hình dạng không". Không cái nào trả lời
+ * "người này là ai" — xem mục "Bảo mật" trong README.
+ *
+ * Đăng nhập chỉ tồn tại ở đúng một chỗ: trang quản trị `/ir-form/dashboard/`,
+ * nơi nó mở đường *đọc* và *xóa* cho hai địa chỉ trong danh sách trắng. Vì
+ * vậy tệp này **không được import `firebase/auth`** — cả hai điểm vào đều
+ * import nó, nên thứ gì nằm đây cũng đi thẳng vào gói của sinh viên. SDK auth
+ * nạp ở src/dashboard/lib/adminAuth.ts, và chỉ ở đó.
  */
 
 import { type FirebaseApp, initializeApp } from 'firebase/app';
@@ -35,6 +41,11 @@ const EMULATOR_CONFIG = {
 
 const envConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  // Chỉ trang quản trị dùng tới: `signInWithPopup` mở
+  // https://<authDomain>/__/auth/handler, nên thiếu nó là bấm đăng nhập không
+  // ra gì. Trang sinh viên không đụng tới Auth nên không thấy khác biệt — đó
+  // đúng là lý do ô này vắng mặt suốt từ lần di trú App Check tới giờ.
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
@@ -54,6 +65,14 @@ const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 export const isConfigured =
   import.meta.env.DEV ||
   Boolean(envConfig.apiKey && envConfig.projectId && recaptchaSiteKey);
+
+/**
+ * Riêng trang quản trị còn cần `authDomain`. Cố ý **không** gộp vào
+ * `isConfigured`: thiếu một giá trị mà chỉ hai người dùng tới thì không có lý
+ * do gì để chặn cả trang nộp đơn của sinh viên.
+ */
+export const isAuthConfigured =
+  import.meta.env.DEV || Boolean(isConfigured && envConfig.authDomain);
 
 export const app: FirebaseApp = initializeApp(
   import.meta.env.DEV && !envConfig.apiKey ? EMULATOR_CONFIG : envConfig,

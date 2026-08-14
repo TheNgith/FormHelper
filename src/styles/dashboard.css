@@ -1,0 +1,332 @@
+/* Phần giao diện riêng của trang quản trị.
+
+   Nạp *sau* index.css và dựa hẳn vào nó: cùng bảng màu, cùng thang chữ, cùng
+   khung `.sheet`. Tệp này chỉ thêm những thứ trang nộp đơn không có — thẻ tab,
+   bảng dữ liệu rộng, khung biểu đồ, hai cột của tab tra cứu.
+
+   Khác biệt duy nhất về bố cục: trang nộp đơn là một tờ giấy hẹp đọc trên điện
+   thoại, còn trang này là một cái bàn làm việc. Nó nới `.sheet` rộng ra và cho
+   bảng cuộn ngang trong khung riêng thay vì ép mọi cột vào bề ngang máy. */
+
+.dashboard .sheet {
+  max-width: 1320px;
+}
+
+.dashboard .sheet-head h1 {
+  margin-right: var(--space-4);
+}
+
+.dashboard .sheet-meta {
+  margin-right: auto;
+}
+
+/* ---------- Đăng nhập ---------- */
+
+.signin {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+  max-width: 46ch;
+}
+
+.signin-lead {
+  font-size: var(--text-lg);
+  text-wrap: pretty;
+}
+
+/* ---------- Thẻ tab ---------- */
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.tab {
+  min-height: var(--control-min-height);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: var(--control-font);
+  color: var(--color-neutral-700);
+  background: transparent;
+  border: 0;
+  /* Vạch dưới nằm sẵn ở trạng thái trong suốt để chữ không nhảy một pixel khi
+     đổi tab. */
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--color-text);
+}
+
+.tab[aria-current='page'] {
+  color: var(--color-accent-700);
+  border-bottom-color: var(--color-accent);
+}
+
+/* ---------- Thanh lọc ---------- */
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.filter-bar .field {
+  min-width: 150px;
+}
+
+.filter-summary {
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  font-feature-settings: 'tnum';
+  /* Đẩy các nút thao tác sang hẳn mép phải, tách khỏi nhóm ô lọc. */
+  margin-right: auto;
+  padding-bottom: var(--space-2);
+}
+
+.filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ---------- Bảng đơn ---------- */
+
+.records-table {
+  min-width: 940px;
+}
+
+.records-table td {
+  vertical-align: middle;
+}
+
+.records-table .col-check,
+.records-table .col-expand {
+  width: 40px;
+}
+
+.records-table .col-ref {
+  font-feature-settings: 'tnum';
+  white-space: nowrap;
+}
+
+.records-table .col-count {
+  width: 84px;
+  text-align: right;
+  font-feature-settings: 'tnum';
+}
+
+.records-table input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-accent);
+}
+
+.row-toggle {
+  min-width: 28px;
+  font-size: var(--text-lg);
+  line-height: 1;
+}
+
+.row-detail > td {
+  background: var(--color-faintest);
+  padding: var(--space-3) var(--space-4);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-2) var(--space-4);
+  margin: 0 0 var(--space-3);
+}
+
+.detail-grid dt {
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.detail-grid dd {
+  margin: 0;
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.sample-table {
+  min-width: 380px;
+  background: var(--color-bg);
+}
+
+.table-empty {
+  padding: var(--space-4) 0;
+  font-size: var(--text-lg);
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+/* ---------- Biểu mẫu nhập tay ---------- */
+
+.add-form {
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+  background: var(--color-faintest);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+}
+
+.add-subhead {
+  margin: var(--space-6) 0 var(--space-2);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.add-samples {
+  list-style: none;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+}
+
+.add-samples li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--color-divider);
+}
+
+@media (min-width: 820px) {
+  .add-samples li {
+    grid-template-columns: 40px 1fr 160px 1fr auto;
+  }
+}
+
+.add-samples .field {
+  margin: 0;
+}
+
+/* ---------- Biểu đồ ---------- */
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 900px) {
+  .chart-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.chart-card {
+  padding: var(--space-4);
+  background: var(--color-bg);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+}
+
+.chart-title {
+  font-size: 21px;
+}
+
+.chart-note {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.chart-plot {
+  margin-top: var(--space-3);
+}
+
+.chart-empty {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+}
+
+/* Chú giải mang cả tên lẫn con số, nên không lát nào của biểu đồ tròn phải
+   nhận dạng bằng riêng màu sắc — điều kiện để lát "Other" mặc màu xám. */
+.chart-legend {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.chart-legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.chart-swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.chart-legend-label {
+  overflow-wrap: anywhere;
+}
+
+.chart-legend-value {
+  margin-left: auto;
+  font-feature-settings: 'tnum';
+  color: var(--color-neutral-700);
+}
+
+.chart-legend-share {
+  color: var(--color-muted);
+}
+
+/* ---------- Tab tra cứu ---------- */
+
+.lookup {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+
+@media (min-width: 900px) {
+  .lookup {
+    grid-template-columns: 300px 1fr;
+    align-items: start;
+  }
+}
+
+.lookup-panel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-faintest);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+}
+
+.lookup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.lookup-results {
+  min-width: 0; /* cho bảng cuộn trong cột của nó, không đẩy rộng cả lưới */
+}

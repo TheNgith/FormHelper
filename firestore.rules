@@ -3,10 +3,17 @@ rules_version = '2';
 // Một nửa ranh giới bảo mật của ứng dụng. Nửa kia là App Check, và nó không
 // nằm trong tệp này.
 //
-// Ứng dụng không còn đăng nhập. Không có `request.auth`, không có danh tính,
-// nên rules dưới đây *không biết ai đang gọi* — chúng chỉ biết hình dạng của
-// thứ được ghi. Đừng đọc chúng như một lớp chống mạo danh: một người ngồi
-// trên đúng trang web, gõ tên người khác, sẽ đi qua toàn bộ tệp này.
+// **Đường ghi không có danh tính.** Sinh viên nộp đơn không đăng nhập, nên
+// `allow create` dưới đây *không biết ai đang gọi* — nó chỉ biết hình dạng
+// của thứ được ghi. Đừng đọc nó như một lớp chống mạo danh: một người ngồi
+// trên đúng trang web, gõ tên người khác, sẽ đi qua trọn vẹn.
+//
+// **Đường đọc thì có.** Trang quản trị /ir-form/dashboard/ đăng nhập bằng
+// Google và `isAdmin()` bên dưới là cái cổng thật sự của nó — danh sách trong
+// src/lib/admins.ts chỉ là bản chép để vẽ giao diện, không có thẩm quyền gì.
+// Quyền đọc từng bị đóng hẳn (`allow read: if false`) và lý do là "không có
+// danh tính nên mở cho một trình duyệt là mở cho cả Internet". Lập luận ấy
+// đúng và nó *có điều kiện*; điều kiện đó nay không còn.
 //
 // Việc chặn script, bot và curl thuộc về App Check (reCAPTCHA v3), bật bằng
 // một công tắc trong Firebase console → App Check → Cloud Firestore. Rules
@@ -22,6 +29,21 @@ service cloud.firestore {
 
     function boundedString(value, maxLength) {
       return value is string && value.size() >= 1 && value.size() <= maxLength;
+    }
+
+    // Hai địa chỉ của bộ môn, chép từ src/lib/admins.ts. Rules không import
+    // được JavaScript nên đây là bản chép thứ hai, và firestore.rules.test.ts
+    // đọc thẳng tệp này ra để so — hệt như nó đã canh danh sách trường.
+    //
+    // `email_verified` không phải trang trí. Thiếu nó là rule tin vào một
+    // claim `email` mà vài nhà cung cấp cho người dùng tự đặt. Với Google là
+    // nhà cung cấp duy nhất đang bật thì nó luôn đúng, và nó giữ cho rule vẫn
+    // đúng vào cái ngày ai đó bật thêm nhà cung cấp thứ hai.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['nguyengiathinh004@gmail.com',
+                                        'minhhuy.up2012@gmail.com'];
     }
 
     match /submissions/{maHoSo} {
@@ -84,20 +106,38 @@ service cloud.firestore {
       // là mức khả thi. Trần thật sự là giới hạn 1 MiB mỗi tài liệu của
       // Firestore. Trước đây ai nhồi 60 mẫu vớ vẩn thì còn truy ra được danh
       // tính, nay thì không — chấp nhận, vì thiệt hại là một tài liệu vô dụng.
+      //
+      // Trang quản trị nhập tay một đơn cũng đi qua đúng rule này, không có
+      // nhánh riêng nào cho người quản trị: cùng `toDocument()`, cùng dạng ID
+      // do `generateMaHoSo` sinh, cùng `createdAt == request.time`. Nhờ vậy
+      // việc "thêm đơn bằng tay" không tốn thêm một dòng nào trên ranh giới
+      // bảo mật.
       allow create: if hasExactKeys(request.resource.data)
         && wellFormed(request.resource.data);
 
-      // Không trình duyệt nào đọc được gì. Mở dù chỉ một đường đọc là cho
-      // người lạ dò ID tài liệu để gom tên, mã số sinh viên và số điện thoại —
-      // và không còn danh tính nào để thu hẹp quyền đọc theo người gửi.
+      // Chỉ hai người trong danh sách trắng. Bao trọn cả `get` lẫn `list`,
+      // nên trang quản trị đọc một lượt cả bộ sưu tập được, còn người lạ dò
+      // ID tài liệu thì vẫn không gom được tên, mã số sinh viên hay số điện
+      // thoại — thứ mà `if false` ngày trước sinh ra để chặn.
       //
-      // Bộ môn lấy dữ liệu bằng scripts/export-csv.ts, chạy tại máy với
-      // service account: nó đi vòng qua cả rules lẫn App Check.
-      allow read: if false;
+      // Bộ môn còn một đường nữa không qua trình duyệt:
+      // scripts/export-csv.ts chạy tại máy với service account, đi vòng qua cả
+      // rules lẫn App Check. Đó vẫn là cách duy nhất lấy được một bản sao
+      // trước khi xóa.
+      allow read: if isAdmin();
 
-      // Đơn đã nộp là bản ghi cố định. Sửa hay xóa thì làm trong Firebase
-      // console, có ghi vết, chứ không qua ứng dụng này.
-      allow update, delete: if false;
+      // Xóa được, sửa thì không.
+      //
+      // Trang quản trị có nút xóa nhiều đơn một lúc; nó không sửa đơn nào.
+      // Đóng `update` vì thế rẻ hơn hẳn: một rule cho sửa phải ghim
+      // `createdAt` và `maHoSo` bất biến so với tài liệu đang có, và mỗi điều
+      // kiện như vậy là một chỗ để viết sai. Sửa đơn thì làm trong Firebase
+      // console, nơi có ghi vết.
+      //
+      // Xóa là không hoàn lại: không có trường xóa mềm, không có bản sao lưu.
+      // Hộp thoại xác nhận trong trang quản trị là toàn bộ lớp chắn.
+      allow delete: if isAdmin();
+      allow update: if false;
     }
 
     // Mọi đường dẫn khác đều đóng.

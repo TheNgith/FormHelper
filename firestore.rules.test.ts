@@ -13,10 +13,11 @@
  *
  * Những gì bên dưới thật sự chứng minh: một máy khách bất kỳ chỉ tạo được
  * đúng một tài liệu đúng hình dạng, dưới một ID đúng dạng, và không đọc được
- * gì cả.
+ * gì cả — trừ hai địa chỉ trong danh sách trắng của trang quản trị, thứ đọc
+ * và xóa được nhưng vẫn không sửa được.
  *
- * Chạy bằng `npm run test:rules` (tự bật emulator), không chạy được nếu gọi
- * thẳng `vitest` vì cần emulator đang mở.
+ * Chạy bằng `npm run test:rules` (tự bật emulator Firestore *và* emulator
+ * Auth), không chạy được nếu gọi thẳng `vitest` vì cần emulator đang mở.
  */
 
 import { readFileSync } from 'node:fs';
@@ -40,6 +41,7 @@ import {
 } from 'firebase/firestore';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
+import { ADMIN_EMAILS } from './src/lib/admins.ts';
 import { SUBMISSION_FIELDS } from './src/lib/submissionFields.ts';
 
 const RULES_PATH = fileURLToPath(new URL('./firestore.rules', import.meta.url));
@@ -50,14 +52,33 @@ const MA_HO_SO = 'IR-20260812-A7K3M9';
 let testEnv: RulesTestEnvironment;
 
 /**
- * Máy khách của ứng dụng.
- *
- * Không còn đăng nhập nên chỉ có đúng một loại máy khách, và nó chưa xác
- * thực. Chỗ này từng có `as()` cho tài khoản đã đăng nhập; việc hai hàm gộp
- * lại thành một chính là toàn bộ thay đổi của lần di trú này.
+ * Máy khách của trang nộp đơn: chưa đăng nhập, và đó là toàn bộ những gì
+ * sinh viên có. Mọi bài về đường ghi đều đi qua hàm này.
  */
 function client() {
   return testEnv.unauthenticatedContext().firestore();
+}
+
+/**
+ * Máy khách của trang quản trị: một tài khoản Google đã xác minh email.
+ *
+ * `email_verified` phải có mặt trong token — rules đòi đúng claim đó, và một
+ * bài kiểm tra quên nó sẽ đỏ ở chỗ không ai ngờ. Emulator Auth cấp token cho
+ * bất kỳ địa chỉ nào ta gõ vào, và chính điều đó làm cả hai phía của danh
+ * sách trắng kiểm tra được.
+ */
+function as(email: string, { emailVerified = true } = {}) {
+  return testEnv
+    .authenticatedContext(`uid-${email}`, {
+      email,
+      email_verified: emailVerified,
+    })
+    .firestore();
+}
+
+/** Người quản trị đầu tiên trong danh sách trắng. */
+function admin() {
+  return as(ADMIN_EMAILS[0]);
 }
 
 /**
@@ -279,33 +300,120 @@ describe('submissions — chỉ ghi một lần', () => {
     );
   });
 
-  it('không sửa được đơn đã nộp', async () => {
+  it('sinh viên không sửa được đơn đã nộp', async () => {
     await seed(MA_HO_SO, validSubmission());
     await assertFails(
       updateDoc(doc(client(), 'submissions', MA_HO_SO), { studentName: 'Tên khác' }),
     );
   });
 
-  it('không xóa được đơn đã nộp', async () => {
+  it('sinh viên không xóa được đơn đã nộp', async () => {
     await seed(MA_HO_SO, validSubmission());
     await assertFails(deleteDoc(doc(client(), 'submissions', MA_HO_SO)));
   });
 });
 
-describe('submissions — không ai đọc được gì', () => {
-  it('không đọc lại được chính lá đơn vừa ghi', async () => {
-    // Không phải là thu hẹp quyền đọc, mà là đóng hẳn. Không còn danh tính
-    // nên bất cứ đường đọc nào cũng là đường đọc cho người lạ: dò ID tài liệu
-    // là gom được tên, mã số sinh viên và số điện thoại.
+describe('submissions — quyền đọc', () => {
+  it('máy khách chưa đăng nhập không đọc lại được chính lá đơn vừa ghi', async () => {
+    // Bài này từng chứng minh một lời từ chối trọn gói (`allow read: if
+    // false`); nay nó canh một nhánh sống. Chỉ riêng chỗ đó đã đáng giữ lại:
+    // sinh viên vẫn không có đường đọc nào, nên người lạ dò ID tài liệu vẫn
+    // không gom được tên, mã số sinh viên và số điện thoại.
     await assertSucceeds(
       setDoc(doc(client(), 'submissions', MA_HO_SO), validSubmission()),
     );
     await assertFails(getDoc(doc(client(), 'submissions', MA_HO_SO)));
   });
 
-  it('không liệt kê được cả bộ sưu tập', async () => {
+  it('máy khách chưa đăng nhập không liệt kê được cả bộ sưu tập', async () => {
     await seed(MA_HO_SO, validSubmission());
     await assertFails(getDocs(collection(client(), 'submissions')));
+  });
+
+  it('tài khoản Google ngoài danh sách trắng cũng không đọc được gì', async () => {
+    // Ai cũng đăng nhập Google xong được, nên đây mới là bài kiểm tra thật sự
+    // của danh sách trắng. Danh sách trong src/lib/admins.ts chỉ chọn màn hình
+    // để vẽ; thứ từ chối một tài khoản lạ là đúng dòng rules này.
+    await seed(MA_HO_SO, validSubmission());
+    const stranger = as('nguoi.la@gmail.com');
+    await assertFails(getDoc(doc(stranger, 'submissions', MA_HO_SO)));
+    await assertFails(getDocs(collection(stranger, 'submissions')));
+  });
+
+  it('email chưa xác minh thì không đọc được, dù đúng địa chỉ', async () => {
+    // `email_verified` giữ cho rule không tin vào một claim `email` tự khai.
+    // Với Google thì nó luôn đúng; bài này là thứ giữ cho nó vẫn đúng vào cái
+    // ngày ai đó bật thêm một nhà cung cấp thứ hai.
+    await seed(MA_HO_SO, validSubmission());
+    await assertFails(
+      getDoc(
+        doc(as(ADMIN_EMAILS[0], { emailVerified: false }), 'submissions', MA_HO_SO),
+      ),
+    );
+  });
+
+  it('người quản trị đọc được một đơn và liệt kê được cả bộ sưu tập', async () => {
+    // `list` là thứ trang quản trị thật sự dùng: một lượt đọc cả bộ sưu tập
+    // lúc đăng nhập, rồi mọi thứ còn lại chạy trong bộ nhớ.
+    await seed(MA_HO_SO, validSubmission());
+    await assertSucceeds(getDoc(doc(admin(), 'submissions', MA_HO_SO)));
+    await assertSucceeds(getDocs(collection(admin(), 'submissions')));
+  });
+
+  it('cả hai địa chỉ trong danh sách trắng đều đọc được', async () => {
+    await seed(MA_HO_SO, validSubmission());
+    for (const email of ADMIN_EMAILS) {
+      await assertSucceeds(getDoc(doc(as(email), 'submissions', MA_HO_SO)));
+    }
+  });
+});
+
+describe('submissions — quyền của người quản trị', () => {
+  it('người quản trị xóa được đơn', async () => {
+    // Không hoàn lại được: không có trường xóa mềm, không có bản sao lưu.
+    // `npm run export:csv` là cách duy nhất giữ một bản trước khi bấm.
+    await seed(MA_HO_SO, validSubmission());
+    await assertSucceeds(deleteDoc(doc(admin(), 'submissions', MA_HO_SO)));
+  });
+
+  it('tài khoản ngoài danh sách trắng không xóa được', async () => {
+    await seed(MA_HO_SO, validSubmission());
+    await assertFails(
+      deleteDoc(doc(as('nguoi.la@gmail.com'), 'submissions', MA_HO_SO)),
+    );
+  });
+
+  it('người quản trị vẫn không sửa được đơn', async () => {
+    // Cố ý để đóng: trang quản trị không sửa đơn nào, và một rule cho sửa
+    // phải ghim createdAt với maHoSo bất biến — thêm ba điều kiện để viết sai.
+    await seed(MA_HO_SO, validSubmission());
+    await assertFails(
+      updateDoc(doc(admin(), 'submissions', MA_HO_SO), { studentName: 'Tên khác' }),
+    );
+  });
+
+  it('người quản trị nhập tay một đơn đúng hình dạng thì ghi được', async () => {
+    // "Thêm đơn bằng tay" không có nhánh riêng nào trong rules: nó dùng đúng
+    // `allow create` của sinh viên, nên nó không tốn gì trên ranh giới bảo mật.
+    await assertSucceeds(
+      setDoc(doc(admin(), 'submissions', MA_HO_SO), validSubmission()),
+    );
+  });
+
+  it('người quản trị cũng không ghi được đơn sai hình dạng', async () => {
+    // Ràng buộc hình dạng không hỏi ai đang gọi. Một trang quản trị hỏng
+    // không nhét được rác vào bộ sưu tập.
+    await assertFails(
+      setDoc(
+        doc(admin(), 'submissions', MA_HO_SO),
+        validSubmission({ samples: [] }),
+      ),
+    );
+  });
+
+  it('người quản trị vẫn không chạm được sang bộ sưu tập khác', async () => {
+    await assertFails(setDoc(doc(admin(), 'ghi-chu', 'x'), { a: 1 }));
+    await assertFails(getDoc(doc(admin(), 'ghi-chu', 'x')));
   });
 });
 
@@ -330,6 +438,23 @@ describe('rules và mã nguồn nói cùng một danh sách trường', () => {
     expect(Object.keys(validSubmission()).sort()).toEqual(
       [...SUBMISSION_FIELDS].sort(),
     );
+  });
+});
+
+describe('rules và mã nguồn nói cùng một danh sách quản trị', () => {
+  it('danh sách trong isAdmin() đúng bằng ADMIN_EMAILS', () => {
+    // Cùng lý do với danh sách trường ở trên: rules không import được
+    // JavaScript nên có hai bản chép. Lệch nhau ở đây thì triệu chứng còn êm
+    // hơn — một người quản trị lặng lẽ không đọc được gì, trong khi giao diện
+    // vẫn vẽ ra bảng dữ liệu rỗng như thể bộ sưu tập trống.
+    const match = RULES_SOURCE.match(/function isAdmin\(\)[^}]*}/);
+    expect(match, 'không tìm thấy isAdmin() trong firestore.rules').not.toBeNull();
+
+    const inRules = [...match![0].matchAll(/'([^']+@[^']+)'/g)]
+      .map((quoted) => quoted[1])
+      .sort();
+
+    expect(inRules).toEqual([...ADMIN_EMAILS].sort());
   });
 });
 

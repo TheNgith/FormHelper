@@ -73,8 +73,9 @@ describe('đọc tài liệu thành dòng', () => {
   });
 
   it('tài liệu của bản cũ còn trường uid vẫn đọc được', () => {
-    // Đơn nộp thời còn đăng nhập vẫn nằm trong cơ sở dữ liệu. Không di trú
-    // chúng: khóa lạ bị bỏ qua ở đây, và không trình duyệt nào đọc chúng nữa.
+    // Đơn nộp thời sinh viên còn đăng nhập vẫn nằm trong cơ sở dữ liệu. Không
+    // di trú chúng: khóa lạ bị bỏ qua ở đây, và trang quản trị cũng đọc từng ô
+    // nó cần chứ không đòi cả tài liệu đúng hình dạng.
     const parsed = toRow(
       'IR-20260812-A7K3M9',
       document({ uid: 'uid-sv-1' }),

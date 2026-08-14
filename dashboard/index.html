@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+
+    <!--
+      Không có gì trỏ tới trang này và nó không được vào kết quả tìm kiếm.
+
+      **Địa chỉ không công bố không phải một lớp bảo vệ.** Nó chỉ để sinh viên
+      không nhìn thấy một cánh cửa mà họ không mở được. Thứ chặn thật là
+      `isAdmin()` trong firestore.rules — xem src/lib/admins.ts.
+    -->
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Dashboard — Đơn xin sử dụng thiết bị</title>
+
+    <!-- Cùng hai phông với trang nộp đơn; xem ghi chú trong index.html ở gốc. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Lora:wght@400;600&display=swap"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/dashboard/main.tsx"></script>
+  </body>
+</html>

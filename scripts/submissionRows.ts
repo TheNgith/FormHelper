@@ -5,11 +5,11 @@
  * hệ tệp, nên kiểm tra được bằng vitest bình thường. Việc gọi Firestore nằm ở
  * export-csv.ts.
  *
- * Trước đây đoạn này chạy trong trình duyệt ở trang quản trị. Trang đó đã bị
- * gỡ cùng với đăng nhập — không còn danh tính nên firestore.rules không mở
- * được đường đọc nào cho một trình duyệt mà không mở luôn cho cả Internet.
- * Bản thân cách xử lý dữ liệu thì không liên quan gì tới trình duyệt, nên nó
- * chuyển sang đây gần như nguyên vẹn.
+ * Trước đây đoạn này chạy trong trình duyệt ở trang quản trị, rồi chuyển sang
+ * đây khi trang đó bị gỡ. Trang quản trị nay đã trở lại
+ * (`src/dashboard/`), nhưng đoạn này thì ở nguyên: nó dựng **CSV**, việc chỉ
+ * script tại máy làm. Trang quản trị đọc tài liệu theo cách riêng, khoan dung
+ * hơn — xem `toRecord` trong src/dashboard/lib/records.ts.
  *
  * Bản Apps Script cũ gộp ba cột mẫu bằng cách *xóa hết dấu phẩy* trong tên
  * mẫu rồi nối lại bằng dấu phẩy — một mẫu tên "Chất A, dạng muối" bị sửa nội

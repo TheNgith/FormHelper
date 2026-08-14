@@ -9,10 +9,11 @@
     "preview": "vite preview",
     "test": "vitest run && npm run test:rules",
     "test:watch": "vitest",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-don-thiet-bi \"vitest run --config vitest.rules.config.ts\"",
-    "emulators": "firebase emulators:start --only firestore --project demo-don-thiet-bi",
+    "test:rules": "firebase emulators:exec --only firestore,auth --project demo-don-thiet-bi \"vitest run --config vitest.rules.config.ts\"",
+    "emulators": "firebase emulators:start --only firestore,auth --project demo-don-thiet-bi",
     "deploy:rules": "firebase deploy --only firestore:rules",
     "export:csv": "tsx scripts/export-csv.ts",
+    "check:bundle": "tsx scripts/check-bundle.ts",
     "lint": "oxlint"
   },
   "dependencies": {
@@ -20,6 +21,7 @@
     "pdfmake": "^0.3.11",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "recharts": "^3.10.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {

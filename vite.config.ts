@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
@@ -38,6 +40,51 @@ export default defineConfig({
     // <project>.web.app/ir-form/, thứ cần có mỗi khi phải tìm xem lỗi nằm ở
     // ứng dụng hay ở proxy.
     outDir: 'dist/ir-form',
+
+    /**
+     * Hai điểm vào, không phải một router phía máy khách.
+     *
+     * `dashboard/index.html` cộng với `base` và `outDir` ở trên cho ra
+     * `dist/ir-form/dashboard/index.html`, và Firebase Hosting phục vụ nó tại
+     * `/ir-form/dashboard/` như một thư mục bình thường — `trailingSlash:
+     * true` lo nốt địa chỉ thiếu gạch cuối. Không phải sửa firebase.json,
+     * cũng không phải sửa bảng định tuyến của proxy: proxy chuyển tiếp nguyên
+     * tiền tố `/ir-form` nên một đường dẫn mới nằm dưới đó tự đi đúng chỗ.
+     * Ghi chú "bốn nơi phải cùng nói một đường dẫn" ở trên vẫn nói về *một*
+     * đường dẫn, không phải hai.
+     *
+     * Tách hẳn hai điểm vào chứ không dùng router, vì trang nộp đơn mới là
+     * đường nóng — điện thoại, lần đầu vào, dùng một lần rồi thôi. Firebase
+     * Auth và Recharts không được phép nằm trong gói của nó chỉ vì một trang
+     * mỗi tháng có hai người mở. Chỗ đó thì đạt được: `npm run check:bundle`
+     * đo trên bản đã dựng và cả hai thư viện đều vắng mặt.
+     *
+     * **Nhưng nó không hoàn toàn miễn phí, và con số đã đo được.** Rollup dồn
+     * những module *cả hai* điểm vào cùng dùng vào một gói chung, và trang nộp
+     * đơn phải tải gói chung ấy. `src/lib/firebase.ts` nằm ở giữa, nên khi
+     * trang quản trị gọi tới `query`/`orderBy`/`writeBatch` thì bộ máy truy vấn
+     * của Firestore trở thành mã sống và rơi vào gói chung — dù sinh viên
+     * không bao giờ chạm tới nó:
+     *
+     *   trước: 708,69 kB (gzip 213,34)
+     *   sau:   759,02 kB (gzip 227,74)   → +50,3 kB, +14,4 kB gzip (+6,7%)
+     *
+     * Đo bằng cách bỏ dòng `dashboard:` bên dưới rồi dựng lại: gói của sinh
+     * viên trở về đúng 708,76 kB, nên toàn bộ phần chênh là do điểm vào thứ
+     * hai chứ không phải do mã mới của trang nộp đơn.
+     *
+     * Chấp nhận ở mức này. Muốn xóa hẳn phần chênh thì phải dựng **hai lần
+     * riêng biệt** (mỗi điểm vào một lượt `vite build`, không dùng chung gói
+     * nào) — đổi lại trang quản trị mang bản sao React và Firestore của riêng
+     * nó, thứ chẳng ai bận tâm ở một trang hai người dùng. Nếu con số trên còn
+     * phình ra vì trang quản trị dùng thêm API Firestore mới, đó là lúc làm.
+     */
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('index.html', import.meta.url)),
+        dashboard: fileURLToPath(new URL('dashboard/index.html', import.meta.url)),
+      },
+    },
 
     // pdfmake nặng khoảng 1 MB nhưng nằm ở gói riêng, chỉ tải khi sinh viên
     // vào màn hình xem lại. Nâng ngưỡng cảnh báo để bản build không báo động

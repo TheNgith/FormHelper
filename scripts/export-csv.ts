@@ -4,15 +4,16 @@
  *   npm run export:csv                  # → don-thiet-bi-YYYYMMDD.csv
  *   npm run export:csv -- duong-dan.csv
  *
- * Đây là cách duy nhất còn lại để đọc dữ liệu, và đó là cố ý. Không còn đăng
- * nhập nên firestore.rules đóng hẳn mọi đường đọc: mở một đường cho trình
- * duyệt là mở cho cả Internet, và người lạ dò ID tài liệu sẽ gom được tên, mã
- * số sinh viên và số điện thoại. Trang quản trị cũ bị gỡ theo.
+ * Đây là cách duy nhất **mang dữ liệu ra khỏi** Firestore, và là thứ nên chạy
+ * trước khi xóa bất cứ gì: trang quản trị xóa hẳn, không có xóa mềm và không
+ * có bản sao lưu nào khác.
  *
- * Script này đi vòng qua cả rules lẫn App Check vì nó xác thực bằng **service
- * account**, không phải bằng một máy khách web. Nói cách khác: lòng tin nằm ở
- * đúng một tệp JSON trên đúng một máy. Giữ tệp đó như giữ mật khẩu — nó không
- * bao giờ được đi vào kho mã (xem .gitignore).
+ * Trang quản trị `/ir-form/dashboard/` cũng đọc được dữ liệu, nhưng để *xem*
+ * chứ không để mang đi, và nó đi qua rules như mọi máy khách web khác. Script
+ * này thì đi vòng qua cả rules lẫn App Check vì nó xác thực bằng **service
+ * account** — nó không biết tới danh sách trắng nào cả. Nói cách khác: lòng
+ * tin nằm ở đúng một tệp JSON trên đúng một máy. Giữ tệp đó như giữ mật khẩu —
+ * nó không bao giờ được đi vào kho mã (xem .gitignore).
  *
  * Cách chạy:
  *
