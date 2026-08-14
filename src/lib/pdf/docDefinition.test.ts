@@ -84,7 +84,7 @@ describe('buildDocDefinition', () => {
   it('in đủ các câu cam kết và cảm ơn', () => {
     expect(text).toContain('Các mẫu đo bao gồm:');
     expect(text).toContain(
-      'Em xin cam kết, trong thời gian sử dụng thiết bị, em sẽ tuân thủ sự sắp xếp và hướng dẫn của các cán bộ, giảng viên phụ trách.',
+      'Em sẽ liên hệ với thầy TS. Lý Minh Huy (SĐT/Zalo: 0937339949), GV phụ trách máy IR, để sắp xếp lịch sử dụng máy, đồng thời cam kết trong thời gian sử dụng thiết bị sẽ tuân thủ sự sắp xếp và hướng dẫn của các cán bộ, giảng viên phụ trách.',
     );
     expect(text).toContain('Em xin chân thành cảm ơn.');
   });
