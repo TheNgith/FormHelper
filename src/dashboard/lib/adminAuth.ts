@@ -19,8 +19,11 @@ import {
   type Auth,
   type User,
   GoogleAuthProvider,
+  browserLocalPersistence,
+  browserPopupRedirectResolver,
+  browserSessionPersistence,
   connectAuthEmulator,
-  getAuth,
+  initializeAuth,
   onAuthStateChanged,
   signInWithPopup,
   signOut,
@@ -28,7 +31,41 @@ import {
 
 import { app, usingEmulators } from '../../lib/firebase';
 
-export const auth: Auth = getAuth(app);
+/**
+ * `initializeAuth` với persistence chỉ định sẵn, **không dùng `getAuth()`**.
+ *
+ * `getAuth()` chọn IndexedDB làm nơi lưu phiên đăng nhập, và bản IndexedDB
+ * của Firebase Auth có một cái chốt theo trạng thái hiển thị của trang:
+ *
+ *     onVisibilityChange = () => document.visibilityState === 'hidden' && this.onPageHide()
+ *     async _openDb() { if (this.isHiding) throw Error('Database is closing/hidden') }
+ *
+ * Đúng luồng đăng nhập bằng cửa sổ bật lên thì chốt ấy sập vào mặt mình: cửa
+ * sổ Google che mất tab gốc, tab gốc chuyển sang `hidden`, `isHiding` bật lên
+ * — rồi khi Google trả kết quả về, SDK ghi người dùng vừa đăng nhập xuống
+ * IndexedDB và ăn ngay lỗi đó. Nửa OAuth đã xong xuôi; chỉ mỗi lượt ghi hỏng,
+ * nên triệu chứng là "đăng nhập thất bại" sau khi đã đăng nhập thành công.
+ * Nó còn *lúc được lúc không*, tùy tab gốc có bị ẩn đúng khoảnh khắc ấy hay
+ * không, nên đây là loại lỗi rất dễ đổ nhầm cho cấu hình console.
+ *
+ * `browserLocalPersistence` (localStorage) không có cái chốt ấy. Phiên đăng
+ * nhập vẫn sống qua lần đóng trình duyệt, đúng như IndexedDB trước đây, nên
+ * đây là sửa lỗi chứ không phải đổi hành vi. Mức phơi bày cũng không đổi:
+ * IndexedDB và localStorage đều là bộ nhớ cùng nguồn, JavaScript nào chạy
+ * trên trang cũng đọc được cả hai.
+ *
+ * `browserSessionPersistence` đứng sau làm lối lui cho trình duyệt chặn
+ * localStorage (chế độ riêng tư của vài trình duyệt). Muốn *bắt buộc* đăng
+ * nhập lại mỗi lần mở trình duyệt — hợp lý hơn nếu trang này chạy trên máy
+ * dùng chung — thì đảo thứ tự hai dòng dưới.
+ *
+ * `browserPopupRedirectResolver` phải khai tay: `initializeAuth` không tự gắn
+ * nó như `getAuth()`, và thiếu nó thì `signInWithPopup` ném `auth/argument-error`.
+ */
+export const auth: Auth = initializeAuth(app, {
+  persistence: [browserLocalPersistence, browserSessionPersistence],
+  popupRedirectResolver: browserPopupRedirectResolver,
+});
 
 // Không có dòng này thì `npm run dev` mở thẳng cửa sổ đăng nhập Google thật
 // cho dự án giả `demo-don-thiet-bi`. Emulator thì nhận bất kỳ địa chỉ nào ta
