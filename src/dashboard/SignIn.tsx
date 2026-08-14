@@ -19,14 +19,31 @@ export default function SignIn() {
     try {
       await signInWithGoogle();
     } catch (cause) {
-      const code = (cause as { code?: string }).code ?? '';
+      // Ném ra console *nguyên vẹn* trước khi rút gọn thành một câu.
+      //
+      // Bản đầu chỉ giữ lại `.code` rồi vứt phần còn lại, và đúng lần hỏng
+      // thật đầu tiên thì thứ ném ra lại **không có** `.code` — nên màn hình
+      // hiện "Sign-in failed." trống trơn, không ai lần được về nguyên nhân.
+      // Một lỗi không đoán trước được là lúc cần *nhiều* thông tin nhất, chứ
+      // không phải ít nhất.
+      console.error('[dashboard] sign-in failed:', cause);
+
+      const error = cause as { code?: string; name?: string; message?: string };
+      const code = error?.code ?? '';
+
+      // Không có `.code` nghĩa là nó không phải FirebaseError — thường là lỗi
+      // mạng hoặc CORS (`TypeError: Failed to fetch`). Lúc ấy `name` với
+      // `message` là tất cả những gì còn lại, nên đưa thẳng lên màn hình:
+      // trang này chỉ hai người dùng, không có ai để mà giấu.
+      const detail = code || [error?.name, error?.message].filter(Boolean).join(': ');
+
       setError(
         // Người dùng tự đóng cửa sổ thì không phải lỗi, chỉ là đổi ý.
         code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request'
           ? 'Sign-in was cancelled.'
           : code === 'auth/popup-blocked'
             ? 'The browser blocked the sign-in popup. Allow popups for this site and try again.'
-            : `Sign-in failed${code ? ` (${code})` : ''}.`,
+            : `Sign-in failed${detail ? ` — ${detail}` : ''}. See the browser console for the full error.`,
       );
     } finally {
       setBusy(false);
