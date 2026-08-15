@@ -42,35 +42,30 @@ export default function Lookup({ records }: Props) {
         <Field
           id="lookup-studentName"
           label="Applicant name"
-          hint="Partial match"
           value={criteria.studentName}
           onChange={(v) => patch({ studentName: v })}
         />
         <Field
           id="lookup-studentId"
           label="Student ID"
-          hint="Matches from the start"
           value={criteria.studentId}
           onChange={(v) => patch({ studentId: v })}
         />
         <Field
           id="lookup-className"
           label="Class"
-          hint="Partial match"
           value={criteria.className}
           onChange={(v) => patch({ className: v })}
         />
         <Field
           id="lookup-email"
           label="Email"
-          hint="Partial match"
           value={criteria.email}
           onChange={(v) => patch({ email: v })}
         />
         <Field
           id="lookup-supervisorName"
           label="Supervisor"
-          hint="Partial match, honorific optional"
           value={criteria.supervisorName}
           onChange={(v) => patch({ supervisorName: v })}
         />
@@ -96,10 +91,7 @@ export default function Lookup({ records }: Props) {
 
       <div className="lookup-results">
         {results === null ? (
-          <p className="table-empty">
-            Fill in one or more fields, then search. All matching is
-            case-insensitive and runs on the records already loaded.
-          </p>
+          <p className="table-empty">Fill in one or more fields, then search.</p>
         ) : (
           <>
             <p className="filter-summary">
@@ -116,13 +108,11 @@ export default function Lookup({ records }: Props) {
 function Field({
   id,
   label,
-  hint,
   value,
   onChange,
 }: {
   id: string;
   label: string;
-  hint: string;
   value: string;
   onChange: (value: string) => void;
 }) {
@@ -130,7 +120,6 @@ function Field({
     <div className="field">
       <label htmlFor={id}>{label}</label>
       <input id={id} type="text" value={value} onChange={(e) => onChange(e.target.value)} />
-      <span className="field-hint">{hint}</span>
     </div>
   );
 }

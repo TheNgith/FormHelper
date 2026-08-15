@@ -49,7 +49,11 @@
   padding: var(--space-2) var(--space-3);
   font-family: var(--font-heading);
   font-weight: var(--font-heading-weight);
-  font-size: var(--control-font);
+  /* Cùng bậc với tiêu đề biểu đồ: đây là tên của cả một màn hình, không phải
+     nhãn của một cái nút, nên nó không đi theo --control-font. Cormorant
+     Garamond có chữ thường thấp, nên 21px ở đây đọc lên ngang một dòng chữ
+     chạy 16px chứ không hề lấn át. */
+  font-size: 21px;
   color: var(--color-neutral-700);
   background: transparent;
   border: 0;
@@ -132,8 +136,22 @@
 
 .row-toggle {
   min-width: 28px;
-  font-size: var(--text-lg);
   line-height: 1;
+}
+
+.row-caret {
+  display: block;
+  transition: transform 120ms ease;
+}
+
+.row-toggle[aria-expanded='true'] .row-caret {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row-caret {
+    transition: none;
+  }
 }
 
 .row-detail > td {
@@ -241,20 +259,13 @@
   font-size: 21px;
 }
 
-.chart-note {
-  margin-top: var(--space-1);
-  font-size: var(--text-xs);
-  color: var(--color-neutral-700);
-  text-wrap: pretty;
-}
-
 .chart-plot {
   margin-top: var(--space-3);
 }
 
 .chart-empty {
   margin-top: var(--space-4);
-  font-size: var(--text-sm);
+  font-size: var(--text-lg);
   color: var(--color-neutral-700);
 }
 
@@ -272,7 +283,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--text-sm);
+  /* Cùng bậc với ô trong bảng đơn: chú giải là số liệu đọc kỹ, không phải chữ
+     phụ. */
+  font-size: var(--text-lg);
 }
 
 .chart-swatch {

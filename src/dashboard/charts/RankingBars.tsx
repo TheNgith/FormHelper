@@ -37,9 +37,9 @@ export default function RankingBars({
   data: Slice[];
   valueName: string;
 }) {
-  // Nhãn dài cần chỗ, nhưng cắt cột quá hẹp thì biểu đồ hết ý nghĩa. 168px là
-  // chỗ cho khoảng 22 ký tự ở bậc chữ nhỏ nhất; dài hơn thì Recharts tự cắt.
-  const labelWidth = 168;
+  // Nhãn dài cần chỗ, nhưng cắt cột quá hẹp thì biểu đồ hết ý nghĩa. 184px là
+  // chỗ cho khoảng 22 ký tự ở AXIS_FONT_SIZE; dài hơn thì Recharts tự cắt.
+  const labelWidth = 184;
 
   return (
     <ResponsiveContainer width="100%" height={Math.max(160, data.length * 34 + 24)}>

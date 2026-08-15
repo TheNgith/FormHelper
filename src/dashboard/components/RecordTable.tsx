@@ -108,7 +108,23 @@ export default function RecordTable({ records, selection, emptyMessage }: Props)
                     aria-expanded={isOpen}
                     onClick={() => toggleExpanded(record.maHoSo)}
                   >
-                    <span aria-hidden="true">{isOpen ? '−' : '+'}</span>
+                    {/* Mũi tên vẽ bằng SVG chứ không dùng ký tự: một dấu ‹›
+                        trong phông chữ có chân bị lệch tâm và đổi hình theo
+                        từng máy. Mở dòng ra thì nó quay ngược lên. */}
+                    <svg
+                      className="row-caret"
+                      viewBox="0 0 16 16"
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M4 6.5 8 10.5 12 6.5" />
+                    </svg>
                     <span className="sr-only">
                       {isOpen ? 'Hide samples for' : 'Show samples for'} {record.maHoSo}
                     </span>

@@ -45,8 +45,14 @@ export const SURFACE = '#f3f2f2';
 
 export const FONT_BODY = "'Lora', Georgia, 'Times New Roman', serif";
 
-/** Bậc chữ nhỏ nhất của trang, dùng cho nhãn trục. */
-export const AXIS_FONT_SIZE = 13;
+/**
+ * Cỡ chữ nhãn trục và hộp chú thích.
+ *
+ * Trước đây là 13px — bậc nhỏ nhất của trang — và nó làm cả tab tổng quan đọc
+ * lên nhỏ hơn hẳn bảng đơn ở tab bản ghi. 15px kéo gần lại bậc chữ chạy 16px
+ * mà vẫn để đủ mười hai nhãn tháng đứng cạnh nhau trên một thẻ nửa bề ngang.
+ */
+export const AXIS_FONT_SIZE = 15;
 
 /** Bo tròn đầu cột, đầu còn lại cắm thẳng vào trục. */
 export const BAR_RADIUS = 4;

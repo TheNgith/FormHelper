@@ -72,35 +72,25 @@ export default function Overview({ records, years, year, onYearChange }: Props) 
       <div className="chart-grid">
         <ChartCard
           title={`Submissions per month, ${year}`}
-          note="Every month is shown, including months with none."
           isEmpty={months.every((bucket) => bucket.value === 0)}
         >
           <MonthlyBars data={months} />
         </ChartCard>
 
-        <ChartCard
-          title="Sample state"
-          note={`Counted per sample, not per submission — ${sampleTotal} in total.`}
-          isEmpty={sampleTotal === 0}
-        >
+        {/* Đếm theo *mẫu* chứ không theo *đơn*. Dòng tổng kết trên thanh lọc
+            in ra cả hai con số, nên chỗ này không cần nhắc lại. */}
+        <ChartCard title="Sample state" isEmpty={sampleTotal === 0}>
           <StateDonut data={states} />
         </ChartCard>
 
-        <ChartCard
-          title="Classes"
-          note="Top 10; everything below is folded into Other."
-          isEmpty={classes.length === 0}
-        >
+        {/* Mười lớp nhiều đơn nhất; phần còn lại gộp vào "Other". */}
+        <ChartCard title="Classes" isEmpty={classes.length === 0}>
           <RankingBars data={classes} valueName="Submissions" />
         </ChartCard>
 
-        <ChartCard
-          title="Supervisors"
-          // Ghi ra thẳng chỗ phép gộp còn hở, thay vì để người đọc tự đoán vì
-          // sao một người xuất hiện hai lần.
-          note="Grouped by name without the Thầy/Cô honorific. Different academic titles stay separate."
-          isEmpty={supervisors.length === 0}
-        >
+        {/* Gộp theo tên đã bỏ chữ Thầy/Cô, nhưng học hàm học vị khác nhau vẫn
+            là hai mục khác nhau — chỗ hở đã biết của phép gộp. */}
+        <ChartCard title="Supervisors" isEmpty={supervisors.length === 0}>
           <RankingBars data={supervisors} valueName="Submissions" />
         </ChartCard>
       </div>
